@@ -14,12 +14,12 @@ export interface GearItem {
 
 export interface ListeningSession {
   id: string;
-  gearIds: string[];   // linked gear
+  gearIds: string[];  // linked gear
   date: string;
-  duration?: number;   // in minutes
-  notes: string;
+  duration?: number;  // in minutes
+  notes?: string;
   trackOrAlbum?: string;
-  rating?: number;     // 1-10
+  rating?: number;    // 1-10
   eqProfileId?: string;
   createdAt: string;
 }
@@ -27,7 +27,7 @@ export interface ListeningSession {
 export interface EQProfile {
   id: string;
   name: string;
-  gearId?: string;     // optional link to a specific headphone
+  gearId?: string;    // optional link to a specific headphone
   bands: EQBand[];
   preamp: number;
   notes?: string;
@@ -36,8 +36,7 @@ export interface EQProfile {
 }
 
 export interface EQBand {
-  frequency: number;   // Hz
-  gain: number;        // dB
-  q: number;           // Q factor
-  type: 'peak' | 'lowShelf' | 'highShelf' | 'lowPass' | 'highPass';
+  frequency: number;
+  gain: number;
+  q: number;
 }
