@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function TabsLayout() {
   return (
@@ -13,9 +14,33 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: '#797876',
       }}
     >
-      <Tabs.Screen name="gear" options={{ title: 'Gear' }} />
-      <Tabs.Screen name="sessions" options={{ title: 'Sessions' }} />
-      <Tabs.Screen name="eq" options={{ title: 'EQ Profiles' }} />
+      <Tabs.Screen
+        name="gear"
+        options={{
+          title: 'Gear',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="headphones" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="sessions"
+        options={{
+          title: 'Sessions',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="playlist-music" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="eq"
+        options={{
+          title: 'EQ Profiles',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="equalizer" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
