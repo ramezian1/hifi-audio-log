@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Hi-Fi Audio Log",
+    "slug": "hifi-audio-log",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "hifiaudiolog",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f1117"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f1117"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
