@@ -15,6 +15,15 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="gear"
         options={{
           title: 'Gear',
