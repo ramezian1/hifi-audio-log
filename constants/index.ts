@@ -3,6 +3,7 @@ export const GEAR_TYPES = [
   { label: 'IEM', value: 'iem' },
   { label: 'DAC', value: 'dac' },
   { label: 'Amp', value: 'amp' },
+  { label: 'DAC/Amp', value: 'dac/amp' },
   { label: 'Cable', value: 'cable' },
   { label: 'Other', value: 'other' },
 ] as const;

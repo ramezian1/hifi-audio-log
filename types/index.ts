@@ -2,7 +2,7 @@ export interface GearItem {
   id: string;
   name: string;
   brand: string;
-  type: 'headphone' | 'iem' | 'dac' | 'amp' | 'cable' | 'other';
+  type: 'headphone' | 'iem' | 'dac' | 'amp' | 'dac/amp' | 'cable' | 'other';
   purchaseDate?: string;
   price?: number;
   notes?: string;
@@ -19,6 +19,7 @@ export interface ListeningSession {
   duration?: number;  // in minutes
   notes?: string;
   trackOrAlbum?: string;
+  artist?: string;
   rating?: number;    // 1-10
   eqProfileId?: string;
   createdAt: string;
