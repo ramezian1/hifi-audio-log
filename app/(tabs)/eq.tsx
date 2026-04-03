@@ -8,11 +8,6 @@ export default function EQScreen() {
   const profiles = useEQStore((s) => s.profiles);
   const gear = useGearStore((s) => s.gear);
 
-  const getGearName = (gearId?: string) => {
-    if (!gearId) return undefined;
-    return gear.find((g) => g.id === gearId)?.name;
-  };
-
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>EQ Profiles</Text>
@@ -20,16 +15,15 @@ export default function EQScreen() {
         data={profiles}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          const gearName = getGearName(item.gearId);
+          const linkedGear = item.gearId ? gear.find((g) => g.id === item.gearId) : undefined;
+          const subtitle = [
+            linkedGear ? linkedGear.name : null,
+            `${item.bands.length} bands`,
+          ].filter(Boolean).join(' · ');
+
           return (
             <Card style={styles.card}>
-              <Card.Title
-                title={item.name}
-                subtitle={[
-                  gearName,
-                  `${item.bands.length} bands`,
-                ].filter(Boolean).join(' · ')}
-              />
+              <Card.Title title={item.name} subtitle={subtitle} />
               {item.notes && (
                 <Card.Content>
                   <Text variant="bodySmall" style={styles.notes}>{item.notes}</Text>

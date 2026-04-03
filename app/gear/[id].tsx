@@ -1,104 +1,101 @@
-import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Card, Button, Chip, Divider, useTheme } from 'react-native-paper';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text, Card, Button, Chip, Divider } from 'react-native-paper';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useGearStore } from '../../store/useGearStore';
 import { useSessionStore } from '../../store/useSessionStore';
 
 export default function GearDetailScreen() {
-  const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const gear = useGearStore((s) => s.getGearById(id));
+  const gear = useGearStore((s) => s.gear);
   const deleteGear = useGearStore((s) => s.deleteGear);
-  const sessions = useSessionStore((s) => s.sessions.filter((sess) => sess.gearIds.includes(id)));
+  const getSessionsByGearId = useSessionStore((s) => s.getSessionsByGearId);
+  const gearItem = gear.find((g) => g.id === id);
 
-  if (!gear) {
+  if (!gearItem) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <Text variant="bodyLarge" style={styles.notFound}>Gear not found.</Text>
+      <View style={styles.container}>
+        <Text variant="bodyLarge" style={styles.emptyText}>Gear item not found.</Text>
       </View>
     );
   }
 
+  const linkedSessions = getSessionsByGearId(gearItem.id);
+
   const handleDelete = () => {
-    deleteGear(id);
+    deleteGear(gearItem.id);
     router.back();
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <FlatList
-        ListHeaderComponent={
-          <View style={styles.content}>
-            <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>{gear.name}</Text>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>{gear.brand}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text variant="headlineMedium" style={styles.name}>{gearItem.name}</Text>
+      <Text variant="titleMedium" style={styles.brand}>{gearItem.brand}</Text>
+      <Chip compact style={styles.typeChip}>{gearItem.type}</Chip>
 
-            <Chip compact style={styles.typeChip}>{gear.type}</Chip>
+      {gearItem.purchaseDate && (
+        <View style={styles.field}>
+          <Text variant="labelMedium" style={styles.label}>Purchase Date</Text>
+          <Text variant="bodyMedium" style={styles.value}>{gearItem.purchaseDate}</Text>
+        </View>
+      )}
 
-            {gear.purchaseDate && (
-              <View style={styles.field}>
-                <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Purchase Date</Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.onBackground }}>{gear.purchaseDate}</Text>
-              </View>
-            )}
+      {gearItem.notes && (
+        <View style={styles.field}>
+          <Text variant="labelMedium" style={styles.label}>Notes</Text>
+          <Text variant="bodyMedium" style={styles.value}>{gearItem.notes}</Text>
+        </View>
+      )}
 
-            {gear.notes && (
-              <View style={styles.field}>
-                <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Notes</Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.onBackground }}>{gear.notes}</Text>
-              </View>
-            )}
+      <Divider style={styles.divider} />
 
-            <Divider style={styles.divider} />
-            <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginBottom: 8 }}>
-              Listening Sessions ({sessions.length})
-            </Text>
-          </View>
-        }
-        data={sessions}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Card style={[styles.sessionCard, { backgroundColor: theme.colors.surfaceVariant }]}>
+      <Text variant="titleMedium" style={styles.sectionTitle}>
+        Listening Sessions ({linkedSessions.length})
+      </Text>
+      {linkedSessions.length === 0 ? (
+        <Text variant="bodySmall" style={styles.emptyText}>No sessions linked to this gear.</Text>
+      ) : (
+        linkedSessions.map((session) => (
+          <Card key={session.id} style={styles.sessionCard}>
             <Card.Title
-              title={item.trackOrAlbum ?? 'Untitled Session'}
-              subtitle={`${item.artist ?? 'Unknown artist'} · ${new Date(item.date).toLocaleDateString()}`}
+              title={session.track || session.trackOrAlbum || 'Untitled'}
+              subtitle={`${session.artist ? session.artist + ' · ' : ''}${new Date(session.createdAt).toLocaleDateString()}`}
             />
-            {item.rating != null && (
+            {session.rating != null && (
               <Card.Content>
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                  Rating: {item.rating}/10
-                </Text>
+                <Text variant="bodySmall" style={styles.rating}>Rating: {session.rating}/5</Text>
               </Card.Content>
             )}
           </Card>
-        )}
-        ListEmptyComponent={
-          <Text style={[styles.empty, { color: theme.colors.onSurfaceVariant }]}>No sessions with this gear yet.</Text>
-        }
-        ListFooterComponent={
-          <Button
-            mode="outlined"
-            onPress={handleDelete}
-            textColor={theme.colors.error}
-            style={styles.deleteButton}
-          >
-            Delete Gear
-          </Button>
-        }
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
+        ))
+      )}
+
+      <Button
+        mode="contained"
+        buttonColor="#b3261e"
+        textColor="#fff"
+        onPress={handleDelete}
+        style={styles.deleteButton}
+        icon="delete"
+      >
+        Delete Gear
+      </Button>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16 },
-  listContent: { paddingBottom: 32 },
-  notFound: { textAlign: 'center', marginTop: 48 },
-  typeChip: { alignSelf: 'flex-start', marginTop: 12 },
-  field: { marginTop: 16 },
-  divider: { marginVertical: 20 },
-  sessionCard: { marginHorizontal: 16, marginBottom: 8 },
-  empty: { textAlign: 'center', marginTop: 16, paddingHorizontal: 16 },
-  deleteButton: { marginHorizontal: 16, marginTop: 24 },
+  container: { flex: 1, backgroundColor: '#171614' },
+  content: { padding: 16, gap: 8 },
+  name: { color: '#cdccca' },
+  brand: { color: '#797876' },
+  typeChip: { alignSelf: 'flex-start', backgroundColor: '#2a2927', marginTop: 4 },
+  field: { marginTop: 12 },
+  label: { color: '#797876', textTransform: 'uppercase', marginBottom: 2 },
+  value: { color: '#cdccca' },
+  divider: { marginVertical: 16, backgroundColor: '#2a2927' },
+  sectionTitle: { color: '#cdccca', marginBottom: 8 },
+  emptyText: { color: '#797876' },
+  sessionCard: { backgroundColor: '#1c1b19', marginBottom: 8 },
+  rating: { color: '#4f98a3' },
+  deleteButton: { marginTop: 24 },
 });

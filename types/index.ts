@@ -14,13 +14,15 @@ export interface GearItem {
 
 export interface ListeningSession {
   id: string;
-  gearIds: string[];  // linked gear
+  gearId?: string;       // primary gear used
+  gearIds?: string[];     // legacy: multiple gear links
   date: string;
-  duration?: number;  // in minutes
+  duration?: number;      // in minutes
   notes?: string;
-  trackOrAlbum?: string;
+  track?: string;         // track or album name
+  trackOrAlbum?: string;  // legacy field
   artist?: string;
-  rating?: number;    // 1-10
+  rating?: number;        // 1-5
   eqProfileId?: string;
   createdAt: string;
 }

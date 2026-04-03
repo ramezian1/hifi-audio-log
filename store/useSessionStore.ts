@@ -7,11 +7,12 @@ interface SessionStore {
   addSession: (session: ListeningSession) => void;
   updateSession: (id: string, updates: Partial<ListeningSession>) => void;
   deleteSession: (id: string) => void;
+  getSessionsByGearId: (gearId: string) => ListeningSession[];
 }
 
 export const useSessionStore = create<SessionStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       sessions: [],
       addSession: (session) =>
         set((state) => ({ sessions: [session, ...state.sessions] })),
@@ -23,6 +24,10 @@ export const useSessionStore = create<SessionStore>()(
         })),
       deleteSession: (id) =>
         set((state) => ({ sessions: state.sessions.filter((s) => s.id !== id) })),
+      getSessionsByGearId: (gearId) =>
+        get().sessions.filter(
+          (s) => s.gearId === gearId || (s.gearIds && s.gearIds.includes(gearId))
+        ),
     }),
     { name: 'sessions-storage' }
   )

@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { TextInput, Button, Text, SegmentedButtons, useTheme, Menu } from 'react-native-paper';
+import { TextInput, Button, Text, SegmentedButtons, Menu } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useSessionStore } from '../../store/useSessionStore';
 import { useGearStore } from '../../store/useGearStore';
 
-const RATING_BUTTONS = [1, 2, 3, 4, 5].map((n) => ({
-  value: n.toString(),
-  label: n.toString(),
-}));
+const RATING_OPTIONS = [
+  { value: '1', label: '1' },
+  { value: '2', label: '2' },
+  { value: '3', label: '3' },
+  { value: '4', label: '4' },
+  { value: '5', label: '5' },
+];
 
 export default function AddSessionModal() {
-  const theme = useTheme();
   const addSession = useSessionStore((s) => s.addSession);
   const gear = useGearStore((s) => s.gear);
-
   const [gearId, setGearId] = useState('');
   const [track, setTrack] = useState('');
   const [artist, setArtist] = useState('');
@@ -28,9 +29,9 @@ export default function AddSessionModal() {
     const now = new Date().toISOString();
     addSession({
       id: Date.now().toString(),
-      gearIds: gearId ? [gearId] : [],
+      gearId: gearId || undefined,
       date: now,
-      trackOrAlbum: track.trim() || undefined,
+      track: track.trim() || undefined,
       artist: artist.trim() || undefined,
       notes: notes.trim() || undefined,
       rating: rating ? parseInt(rating, 10) : undefined,
@@ -40,62 +41,68 @@ export default function AddSessionModal() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.content}>
-      {gear.length > 0 && (
-        <>
-          <Text variant="labelLarge" style={styles.label}>Gear</Text>
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <Button mode="outlined" onPress={() => setMenuVisible(true)} style={styles.menuButton}>
-                {selectedGear ? `${selectedGear.name} (${selectedGear.brand})` : 'Select gear...'}
-              </Button>
-            }
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text variant="labelMedium" style={styles.label}>Gear</Text>
+      <Menu
+        visible={menuVisible}
+        onDismiss={() => setMenuVisible(false)}
+        anchor={
+          <Button
+            mode="outlined"
+            onPress={() => setMenuVisible(true)}
+            style={styles.menuButton}
+            contentStyle={styles.menuButtonContent}
           >
-            {gear.map((g) => (
-              <Menu.Item
-                key={g.id}
-                title={`${g.name} — ${g.brand}`}
-                onPress={() => { setGearId(g.id); setMenuVisible(false); }}
-              />
-            ))}
-          </Menu>
-        </>
-      )}
+            {selectedGear ? selectedGear.name : 'Select gear...'}
+          </Button>
+        }
+        contentStyle={styles.menuContent}
+      >
+        <Menu.Item
+          onPress={() => { setGearId(''); setMenuVisible(false); }}
+          title="None"
+        />
+        {gear.map((g) => (
+          <Menu.Item
+            key={g.id}
+            onPress={() => { setGearId(g.id); setMenuVisible(false); }}
+            title={`${g.name} (${g.brand})`}
+          />
+        ))}
+      </Menu>
 
       <TextInput
         label="Track / Album"
         value={track}
         onChangeText={setTrack}
-        mode="outlined"
         placeholder="What were you listening to?"
+        mode="outlined"
         style={styles.input}
       />
       <TextInput
         label="Artist"
         value={artist}
         onChangeText={setArtist}
-        mode="outlined"
         placeholder="e.g. Pink Floyd"
+        mode="outlined"
         style={styles.input}
       />
       <TextInput
         label="Notes"
         value={notes}
         onChangeText={setNotes}
-        mode="outlined"
         placeholder="Optional notes..."
+        mode="outlined"
         multiline
         numberOfLines={4}
         style={styles.input}
       />
 
-      <Text variant="labelLarge" style={styles.label}>Rating (1-5)</Text>
+      <Text variant="labelMedium" style={styles.label}>Rating</Text>
       <SegmentedButtons
         value={rating}
         onValueChange={setRating}
-        buttons={RATING_BUTTONS}
+        buttons={RATING_OPTIONS}
         style={styles.segmented}
       />
 
@@ -112,12 +119,14 @@ export default function AddSessionModal() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16, gap: 8 },
-  input: { marginBottom: 8 },
-  label: { marginTop: 8, marginBottom: 4 },
-  segmented: { marginBottom: 8 },
-  menuButton: { marginBottom: 8 },
-  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  container: { flex: 1, backgroundColor: '#171614' },
+  content: { padding: 16, gap: 12 },
+  input: { backgroundColor: '#1c1b19' },
+  label: { color: '#797876', marginTop: 4 },
+  segmented: { marginBottom: 4 },
+  menuButton: { alignSelf: 'stretch' },
+  menuButtonContent: { justifyContent: 'flex-start' },
+  menuContent: { backgroundColor: '#1c1b19' },
+  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
   button: { flex: 1 },
 });

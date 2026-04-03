@@ -8,12 +8,14 @@ export default function SessionsScreen() {
   const sessions = useSessionStore((s) => s.sessions);
   const gear = useGearStore((s) => s.gear);
 
-  const getGearName = (gearIds: string[]) => {
-    if (gearIds.length === 0) return undefined;
-    const names = gearIds
-      .map((id) => gear.find((g) => g.id === id)?.name)
-      .filter(Boolean);
-    return names.length > 0 ? names.join(', ') : undefined;
+  const getGearName = (session: typeof sessions[number]): string | undefined => {
+    if (session.gearId) {
+      return gear.find((g) => g.id === session.gearId)?.name;
+    }
+    if (session.gearIds && session.gearIds.length > 0) {
+      return gear.find((g) => g.id === session.gearIds![0])?.name;
+    }
+    return undefined;
   };
 
   return (
@@ -23,23 +25,24 @@ export default function SessionsScreen() {
         data={sessions}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          const gearName = getGearName(item.gearIds);
+          const gearName = getGearName(item);
+          const displayTitle = item.track || item.trackOrAlbum || 'Untitled Session';
+          const subtitleParts: string[] = [];
+          if (item.artist) subtitleParts.push(item.artist);
+          if (gearName) subtitleParts.push(gearName);
+          subtitleParts.push(new Date(item.createdAt).toLocaleDateString());
+
           return (
             <Card style={styles.card}>
               <Card.Title
-                title={item.trackOrAlbum ?? 'Untitled Session'}
-                subtitle={[
-                  item.artist,
-                  gearName,
-                  new Date(item.date).toLocaleDateString(),
-                ].filter(Boolean).join(' · ')}
+                title={displayTitle}
+                subtitle={subtitleParts.join(' · ')}
               />
-              <Card.Content>
-                {item.rating != null && (
-                  <Text variant="bodySmall" style={styles.meta}>Rating: {item.rating}/5</Text>
-                )}
-                {item.notes && <Text variant="bodySmall" style={styles.notes}>{item.notes}</Text>}
-              </Card.Content>
+              {item.rating != null && (
+                <Card.Content>
+                  <Text variant="bodySmall" style={styles.rating}>Rating: {item.rating}/5</Text>
+                </Card.Content>
+              )}
             </Card>
           );
         }}
@@ -56,8 +59,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#171614', padding: 16 },
   title: { color: '#cdccca', marginBottom: 16 },
   card: { marginBottom: 12, backgroundColor: '#1c1b19' },
-  meta: { color: '#4f98a3', marginBottom: 4 },
-  notes: { color: '#797876', marginTop: 4 },
+  rating: { color: '#4f98a3' },
   empty: { color: '#797876', textAlign: 'center', marginTop: 48 },
   fab: { position: 'absolute', right: 16, bottom: 16, backgroundColor: '#4f98a3' },
 });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { TextInput, Button, Text, IconButton, Card, useTheme, Menu } from 'react-native-paper';
+import { TextInput, Button, Text, Menu, IconButton, Card } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useEQStore } from '../../store/useEQStore';
 import { useGearStore } from '../../store/useGearStore';
@@ -11,10 +11,8 @@ function createDefaultBand(): EQBand {
 }
 
 export default function AddEQModal() {
-  const theme = useTheme();
   const addProfile = useEQStore((s) => s.addProfile);
   const gear = useGearStore((s) => s.gear);
-
   const [name, setName] = useState('');
   const [gearId, setGearId] = useState('');
   const [bands, setBands] = useState<EQBand[]>([createDefaultBand()]);
@@ -23,11 +21,11 @@ export default function AddEQModal() {
   const selectedGear = gear.find((g) => g.id === gearId);
 
   const updateBand = (index: number, field: keyof EQBand, value: string) => {
-    setBands((prev) =>
-      prev.map((b, i) =>
-        i === index ? { ...b, [field]: parseFloat(value) || 0 } : b
-      )
-    );
+    setBands((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: parseFloat(value) || 0 };
+      return updated;
+    });
   };
 
   const addBand = () => {
@@ -55,56 +53,67 @@ export default function AddEQModal() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <TextInput
         label="Profile Name *"
         value={name}
         onChangeText={setName}
-        mode="outlined"
         placeholder="e.g. HD 800 S Harman"
+        mode="outlined"
         style={styles.input}
       />
 
-      {gear.length > 0 && (
-        <>
-          <Text variant="labelLarge" style={styles.label}>Gear</Text>
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <Button mode="outlined" onPress={() => setMenuVisible(true)} style={styles.menuButton}>
-                {selectedGear ? `${selectedGear.name} (${selectedGear.brand})` : 'Select gear...'}
-              </Button>
-            }
+      <Text variant="labelMedium" style={styles.label}>Gear</Text>
+      <Menu
+        visible={menuVisible}
+        onDismiss={() => setMenuVisible(false)}
+        anchor={
+          <Button
+            mode="outlined"
+            onPress={() => setMenuVisible(true)}
+            style={styles.menuButton}
+            contentStyle={styles.menuButtonContent}
           >
-            {gear.map((g) => (
-              <Menu.Item
-                key={g.id}
-                title={`${g.name} — ${g.brand}`}
-                onPress={() => { setGearId(g.id); setMenuVisible(false); }}
-              />
-            ))}
-          </Menu>
-        </>
-      )}
+            {selectedGear ? selectedGear.name : 'Select gear...'}
+          </Button>
+        }
+        contentStyle={styles.menuContent}
+      >
+        <Menu.Item
+          onPress={() => { setGearId(''); setMenuVisible(false); }}
+          title="None"
+        />
+        {gear.map((g) => (
+          <Menu.Item
+            key={g.id}
+            onPress={() => { setGearId(g.id); setMenuVisible(false); }}
+            title={`${g.name} (${g.brand})`}
+          />
+        ))}
+      </Menu>
 
       <View style={styles.bandsHeader}>
-        <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+        <Text variant="titleMedium" style={styles.bandsTitle}>
           EQ Bands ({bands.length}/10)
         </Text>
         {bands.length < 10 && (
-          <IconButton icon="plus-circle" onPress={addBand} size={24} />
+          <Button mode="contained-tonal" onPress={addBand} compact icon="plus">
+            Add Band
+          </Button>
         )}
       </View>
 
       {bands.map((band, index) => (
-        <Card key={index} style={[styles.bandCard, { backgroundColor: theme.colors.surfaceVariant }]}>
+        <Card key={index} style={styles.bandCard}>
           <Card.Content>
             <View style={styles.bandHeader}>
-              <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant }}>Band {index + 1}</Text>
-              {bands.length > 1 && (
-                <IconButton icon="close" size={18} onPress={() => removeBand(index)} />
-              )}
+              <Text variant="labelLarge" style={styles.bandLabel}>Band {index + 1}</Text>
+              <IconButton
+                icon="close"
+                size={18}
+                onPress={() => removeBand(index)}
+                disabled={bands.length <= 1}
+              />
             </View>
             <View style={styles.bandRow}>
               <TextInput
@@ -152,16 +161,20 @@ export default function AddEQModal() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16, gap: 8 },
-  input: { marginBottom: 8 },
-  label: { marginTop: 8, marginBottom: 4 },
-  menuButton: { marginBottom: 8 },
-  bandsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
-  bandCard: { marginBottom: 8 },
-  bandHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  container: { flex: 1, backgroundColor: '#171614' },
+  content: { padding: 16, gap: 12 },
+  input: { backgroundColor: '#1c1b19' },
+  label: { color: '#797876', marginTop: 4 },
+  menuButton: { alignSelf: 'stretch' },
+  menuButtonContent: { justifyContent: 'flex-start' },
+  menuContent: { backgroundColor: '#1c1b19' },
+  bandsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  bandsTitle: { color: '#cdccca' },
+  bandCard: { backgroundColor: '#1c1b19' },
+  bandHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  bandLabel: { color: '#cdccca' },
   bandRow: { flexDirection: 'row', gap: 8 },
-  bandInput: { flex: 1 },
-  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 16, marginBottom: 32 },
+  bandInput: { flex: 1, backgroundColor: '#1c1b19' },
+  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 12, marginBottom: 32 },
   button: { flex: 1 },
 });

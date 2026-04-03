@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { TextInput, Button, Text, SegmentedButtons, useTheme } from 'react-native-paper';
+import { TextInput, Button, Text, SegmentedButtons } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useGearStore } from '../../store/useGearStore';
 import { GearItem } from '../../types';
 
-const GEAR_TYPE_BUTTONS: { value: GearItem['type']; label: string }[] = [
+const TYPE_OPTIONS: { value: GearItem['type']; label: string }[] = [
   { value: 'headphone', label: 'Headphone' },
   { value: 'iem', label: 'IEM' },
   { value: 'dac', label: 'DAC' },
@@ -14,9 +14,7 @@ const GEAR_TYPE_BUTTONS: { value: GearItem['type']; label: string }[] = [
 ];
 
 export default function AddGearModal() {
-  const theme = useTheme();
   const addGear = useGearStore((s) => s.addGear);
-
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [type, setType] = useState<GearItem['type']>('headphone');
@@ -40,29 +38,29 @@ export default function AddGearModal() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <TextInput
         label="Name *"
         value={name}
         onChangeText={setName}
-        mode="outlined"
         placeholder="e.g. HD 800 S"
+        mode="outlined"
         style={styles.input}
       />
       <TextInput
         label="Brand *"
         value={brand}
         onChangeText={setBrand}
-        mode="outlined"
         placeholder="e.g. Sennheiser"
+        mode="outlined"
         style={styles.input}
       />
 
-      <Text variant="labelLarge" style={styles.label}>Type</Text>
+      <Text variant="labelMedium" style={styles.label}>Type</Text>
       <SegmentedButtons
         value={type}
         onValueChange={(v) => setType(v as GearItem['type'])}
-        buttons={GEAR_TYPE_BUTTONS}
+        buttons={TYPE_OPTIONS}
         style={styles.segmented}
       />
 
@@ -70,16 +68,16 @@ export default function AddGearModal() {
         label="Purchase Date"
         value={purchaseDate}
         onChangeText={setPurchaseDate}
-        mode="outlined"
         placeholder="e.g. 2024-01-15"
+        mode="outlined"
         style={styles.input}
       />
       <TextInput
         label="Notes"
         value={notes}
         onChangeText={setNotes}
-        mode="outlined"
         placeholder="Optional notes..."
+        mode="outlined"
         multiline
         numberOfLines={4}
         style={styles.input}
@@ -98,11 +96,11 @@ export default function AddGearModal() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16, gap: 8 },
-  input: { marginBottom: 8 },
-  label: { marginTop: 8, marginBottom: 4 },
-  segmented: { marginBottom: 8 },
-  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  container: { flex: 1, backgroundColor: '#171614' },
+  content: { padding: 16, gap: 12 },
+  input: { backgroundColor: '#1c1b19' },
+  label: { color: '#797876', marginTop: 4 },
+  segmented: { marginBottom: 4 },
+  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
   button: { flex: 1 },
 });
