@@ -5,23 +5,30 @@ import { router } from 'expo-router';
 import { useGearStore } from '../../store/useGearStore';
 import type { GearItem } from '../../types';
 
-const TYPE_FILTERS = ['All', 'Headphone', 'IEM', 'DAC', 'Amp', 'DAC/Amp'] as const;
-type TypeFilter = (typeof TYPE_FILTERS)[number];
+const TYPE_FILTERS: { label: string; value: GearItem['type'] | 'all' }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Headphone', value: 'headphone' },
+  { label: 'IEM', value: 'iem' },
+  { label: 'DAC', value: 'dac' },
+  { label: 'Amp', value: 'amp' },
+  { label: 'DAC/Amp', value: 'dac/amp' },
+];
 
 export default function GearScreen() {
   const gear = useGearStore((s) => s.gear);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('All');
+  const [typeFilter, setTypeFilter] = useState<GearItem['type'] | 'all'>('all');
 
-  const filteredGear = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    return gear.filter((item: GearItem) => {
-      if (typeFilter !== 'All' && item.type !== typeFilter.toLowerCase()) return false;
-      if (query) {
-        const matchesName = item.name.toLowerCase().includes(query);
-        const matchesBrand = item.brand.toLowerCase().includes(query);
-        const matchesType = item.type.toLowerCase().includes(query);
-        if (!matchesName && !matchesBrand && !matchesType) return false;
+  const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return gear.filter((item) => {
+      if (typeFilter !== 'all' && item.type !== typeFilter) return false;
+      if (q) {
+        return (
+          item.name.toLowerCase().includes(q) ||
+          item.brand.toLowerCase().includes(q) ||
+          item.type.toLowerCase().includes(q)
+        );
       }
       return true;
     });
@@ -40,24 +47,24 @@ export default function GearScreen() {
         placeholderTextColor="#797876"
       />
       <View style={styles.chipRow}>
-        {TYPE_FILTERS.map((type) => (
+        {TYPE_FILTERS.map((f) => (
           <Chip
-            key={type}
-            selected={typeFilter === type}
-            onPress={() => setTypeFilter(type)}
-            style={[styles.filterChip, typeFilter === type && styles.filterChipActive]}
-            textStyle={typeFilter === type ? styles.filterChipTextActive : styles.filterChipText}
+            key={f.value}
+            selected={typeFilter === f.value}
+            onPress={() => setTypeFilter(f.value)}
             compact
+            style={[styles.chip, typeFilter === f.value && styles.chipSelected]}
+            textStyle={typeFilter === f.value ? styles.chipTextSelected : styles.chipText}
           >
-            {type}
+            {f.label}
           </Chip>
         ))}
       </View>
-      <Text variant="bodySmall" style={styles.resultCount}>
-        {filteredGear.length} {filteredGear.length === 1 ? 'item' : 'items'}
+      <Text variant="bodySmall" style={styles.count}>
+        {filtered.length} item{filtered.length !== 1 ? 's' : ''}
       </Text>
       <FlatList
-        data={filteredGear}
+        data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/gear/${item.id}`)}>
@@ -72,7 +79,7 @@ export default function GearScreen() {
         )}
         ListEmptyComponent={
           <Text style={styles.empty}>
-            {searchQuery || typeFilter !== 'All'
+            {searchQuery || typeFilter !== 'all'
               ? 'No gear matches your search'
               : 'No gear yet. Tap + to add your first item.'}
           </Text>
@@ -89,11 +96,11 @@ const styles = StyleSheet.create({
   searchbar: { backgroundColor: '#1c1b19', marginBottom: 8 },
   searchInput: { color: '#cdccca' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  filterChip: { backgroundColor: '#2a2927' },
-  filterChipActive: { backgroundColor: '#4f98a3' },
-  filterChipText: { color: '#797876' },
-  filterChipTextActive: { color: '#fff' },
-  resultCount: { color: '#797876', marginBottom: 8 },
+  chip: { backgroundColor: '#2a2927' },
+  chipSelected: { backgroundColor: '#4f98a3' },
+  chipText: { color: '#cdccca' },
+  chipTextSelected: { color: '#fff' },
+  count: { color: '#797876', marginBottom: 8 },
   card: { marginBottom: 12, backgroundColor: '#1c1b19' },
   typeChip: { alignSelf: 'flex-start', backgroundColor: '#2a2927' },
   notes: { color: '#797876', marginTop: 8 },

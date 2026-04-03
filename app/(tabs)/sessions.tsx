@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Text, FAB, Card, Chip, Searchbar } from 'react-native-paper';
 import { router } from 'expo-router';
@@ -6,45 +6,50 @@ import { useSessionStore } from '../../store/useSessionStore';
 import { useGearStore } from '../../store/useGearStore';
 import type { ListeningSession } from '../../types';
 
-const RATING_FILTERS = ['All', '★5', '★4', '★3', '★2', '★1'] as const;
-type RatingFilter = (typeof RATING_FILTERS)[number];
-
-function ratingFilterToNumber(filter: RatingFilter): number | null {
-  if (filter === 'All') return null;
-  return parseInt(filter.charAt(1), 10);
-}
+const RATING_FILTERS: { label: string; value: number }[] = [
+  { label: 'All', value: 0 },
+  { label: '\u26055', value: 5 },
+  { label: '\u26054', value: 4 },
+  { label: '\u26053', value: 3 },
+  { label: '\u26052', value: 2 },
+  { label: '\u26051', value: 1 },
+];
 
 export default function SessionsScreen() {
   const sessions = useSessionStore((s) => s.sessions);
   const gear = useGearStore((s) => s.gear);
   const [searchQuery, setSearchQuery] = useState('');
-  const [ratingFilter, setRatingFilter] = useState<RatingFilter>('All');
+  const [ratingFilter, setRatingFilter] = useState(0);
 
-  const getGearName = (session: ListeningSession): string | undefined => {
-    if (session.gearId) {
-      return gear.find((g) => g.id === session.gearId)?.name;
-    }
-    if (session.gearIds && session.gearIds.length > 0) {
-      return gear.find((g) => g.id === session.gearIds![0])?.name;
-    }
-    return undefined;
-  };
+  const getGearName = useCallback(
+    (session: ListeningSession): string | undefined => {
+      if (session.gearId) {
+        return gear.find((g) => g.id === session.gearId)?.name;
+      }
+      if (session.gearIds && session.gearIds.length > 0) {
+        return gear.find((g) => g.id === session.gearIds![0])?.name;
+      }
+      return undefined;
+    },
+    [gear],
+  );
 
-  const filteredSessions = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    const ratingValue = ratingFilterToNumber(ratingFilter);
-
-    return sessions.filter((session: ListeningSession) => {
-      if (ratingValue !== null && session.rating !== ratingValue) return false;
-      if (query) {
-        const track = (session.track || session.trackOrAlbum || '').toLowerCase();
-        const artist = (session.artist || '').toLowerCase();
-        const gearName = (getGearName(session) || '').toLowerCase();
-        if (!track.includes(query) && !artist.includes(query) && !gearName.includes(query)) return false;
+  const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return sessions.filter((item) => {
+      if (ratingFilter !== 0 && item.rating !== ratingFilter) return false;
+      if (q) {
+        const gearName = getGearName(item) ?? '';
+        const title = item.track || item.trackOrAlbum || '';
+        return (
+          title.toLowerCase().includes(q) ||
+          (item.artist ?? '').toLowerCase().includes(q) ||
+          gearName.toLowerCase().includes(q)
+        );
       }
       return true;
     });
-  }, [sessions, searchQuery, ratingFilter, gear]);
+  }, [sessions, searchQuery, ratingFilter, getGearName]);
 
   return (
     <View style={styles.container}>
@@ -59,24 +64,24 @@ export default function SessionsScreen() {
         placeholderTextColor="#797876"
       />
       <View style={styles.chipRow}>
-        {RATING_FILTERS.map((filter) => (
+        {RATING_FILTERS.map((f) => (
           <Chip
-            key={filter}
-            selected={ratingFilter === filter}
-            onPress={() => setRatingFilter(filter)}
-            style={[styles.filterChip, ratingFilter === filter && styles.filterChipActive]}
-            textStyle={ratingFilter === filter ? styles.filterChipTextActive : styles.filterChipText}
+            key={f.value}
+            selected={ratingFilter === f.value}
+            onPress={() => setRatingFilter(f.value)}
             compact
+            style={[styles.chip, ratingFilter === f.value && styles.chipSelected]}
+            textStyle={ratingFilter === f.value ? styles.chipTextSelected : styles.chipText}
           >
-            {filter}
+            {f.label}
           </Chip>
         ))}
       </View>
-      <Text variant="bodySmall" style={styles.resultCount}>
-        {filteredSessions.length} {filteredSessions.length === 1 ? 'session' : 'sessions'}
+      <Text variant="bodySmall" style={styles.count}>
+        {filtered.length} session{filtered.length !== 1 ? 's' : ''}
       </Text>
       <FlatList
-        data={filteredSessions}
+        data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const gearName = getGearName(item);
@@ -90,7 +95,7 @@ export default function SessionsScreen() {
             <Card style={styles.card}>
               <Card.Title
                 title={displayTitle}
-                subtitle={subtitleParts.join(' · ')}
+                subtitle={subtitleParts.join(' \u00B7 ')}
               />
               {item.rating != null && (
                 <Card.Content>
@@ -102,7 +107,7 @@ export default function SessionsScreen() {
         }}
         ListEmptyComponent={
           <Text style={styles.empty}>
-            {searchQuery || ratingFilter !== 'All'
+            {searchQuery || ratingFilter !== 0
               ? 'No sessions match your search'
               : 'No sessions logged yet. Tap + to add one.'}
           </Text>
@@ -119,11 +124,11 @@ const styles = StyleSheet.create({
   searchbar: { backgroundColor: '#1c1b19', marginBottom: 8 },
   searchInput: { color: '#cdccca' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  filterChip: { backgroundColor: '#2a2927' },
-  filterChipActive: { backgroundColor: '#4f98a3' },
-  filterChipText: { color: '#797876' },
-  filterChipTextActive: { color: '#fff' },
-  resultCount: { color: '#797876', marginBottom: 8 },
+  chip: { backgroundColor: '#2a2927' },
+  chipSelected: { backgroundColor: '#4f98a3' },
+  chipText: { color: '#cdccca' },
+  chipTextSelected: { color: '#fff' },
+  count: { color: '#797876', marginBottom: 8 },
   card: { marginBottom: 12, backgroundColor: '#1c1b19' },
   rating: { color: '#4f98a3' },
   empty: { color: '#797876', textAlign: 'center', marginTop: 48 },

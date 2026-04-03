@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
-import { Text, Card, Button, Chip, Surface } from 'react-native-paper';
+import { Text, Card, Chip, Button, Surface } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useGearStore } from '../../store/useGearStore';
 import { useSessionStore } from '../../store/useSessionStore';
@@ -11,12 +11,21 @@ export default function HomeScreen() {
   const sessions = useSessionStore((s) => s.sessions);
   const profiles = useEQStore((s) => s.profiles);
 
-  const recentGear = useMemo(() => gear.slice(-3).reverse(), [gear]);
-  const recentSessions = useMemo(() => sessions.slice(0, 3), [sessions]);
+  const recentGear = useMemo(() => {
+    return [...gear]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
+  }, [gear]);
+
+  const recentSessions = useMemo(() => {
+    return [...sessions]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
+  }, [sessions]);
 
   const isEmpty = gear.length === 0 && sessions.length === 0 && profiles.length === 0;
 
-  const today = new Date().toLocaleDateString('en-US', {
+  const today = new Date().toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -33,27 +42,11 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text variant="headlineMedium" style={styles.appTitle}>Hi-Fi Audio Log</Text>
+      <Text variant="headlineMedium" style={styles.title}>Hi-Fi Audio Log</Text>
       <Text variant="bodyMedium" style={styles.date}>{today}</Text>
 
-      {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <Surface style={styles.statCard}>
-          <Text variant="headlineLarge" style={styles.statNumber}>{gear.length}</Text>
-          <Text variant="bodySmall" style={styles.statLabel}>Gear</Text>
-        </Surface>
-        <Surface style={styles.statCard}>
-          <Text variant="headlineLarge" style={styles.statNumber}>{sessions.length}</Text>
-          <Text variant="bodySmall" style={styles.statLabel}>Sessions</Text>
-        </Surface>
-        <Surface style={styles.statCard}>
-          <Text variant="headlineLarge" style={styles.statNumber}>{profiles.length}</Text>
-          <Text variant="bodySmall" style={styles.statLabel}>EQ Profiles</Text>
-        </Surface>
-      </View>
-
       {isEmpty ? (
-        <View style={styles.onboarding}>
+        <Surface style={styles.onboarding}>
           <Text variant="titleMedium" style={styles.onboardingTitle}>
             Welcome to Hi-Fi Audio Log
           </Text>
@@ -62,18 +55,30 @@ export default function HomeScreen() {
           </Text>
           <Button
             mode="contained"
-            buttonColor="#4f98a3"
-            textColor="#fff"
-            icon="plus"
             onPress={() => router.push('/modals/add-gear')}
             style={styles.onboardingButton}
+            buttonColor="#4f98a3"
           >
             Add Gear
           </Button>
-        </View>
+        </Surface>
       ) : (
         <>
-          {/* Recent Gear */}
+          <View style={styles.statsRow}>
+            <Surface style={styles.statCard}>
+              <Text variant="headlineLarge" style={styles.statNumber}>{gear.length}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Gear</Text>
+            </Surface>
+            <Surface style={styles.statCard}>
+              <Text variant="headlineLarge" style={styles.statNumber}>{sessions.length}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Sessions</Text>
+            </Surface>
+            <Surface style={styles.statCard}>
+              <Text variant="headlineLarge" style={styles.statNumber}>{profiles.length}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>EQ Profiles</Text>
+            </Surface>
+          </View>
+
           {recentGear.length > 0 && (
             <>
               <Text variant="titleMedium" style={styles.sectionTitle}>Recent Gear</Text>
@@ -81,10 +86,10 @@ export default function HomeScreen() {
                 {recentGear.map((item) => (
                   <Pressable key={item.id} onPress={() => router.push(`/gear/${item.id}`)}>
                     <Surface style={styles.gearCard}>
-                      <Text variant="titleSmall" style={styles.gearCardName} numberOfLines={1}>
+                      <Text variant="titleSmall" style={styles.gearName} numberOfLines={1}>
                         {item.name}
                       </Text>
-                      <Chip compact style={styles.gearCardChip} textStyle={styles.gearCardChipText}>
+                      <Chip compact style={styles.gearChip} textStyle={styles.gearChipText}>
                         {item.type}
                       </Chip>
                     </Surface>
@@ -94,24 +99,28 @@ export default function HomeScreen() {
             </>
           )}
 
-          {/* Recent Sessions */}
           {recentSessions.length > 0 && (
             <>
               <Text variant="titleMedium" style={styles.sectionTitle}>Recent Sessions</Text>
-              {recentSessions.map((session) => {
-                const gearName = getGearName(session);
-                const displayTitle = session.track || session.trackOrAlbum || 'Untitled Session';
+              {recentSessions.map((item) => {
+                const gearName = getGearName(item);
+                const displayTitle = item.track || item.trackOrAlbum || 'Untitled Session';
                 const subtitleParts: string[] = [];
-                if (session.artist) subtitleParts.push(session.artist);
+                if (item.artist) subtitleParts.push(item.artist);
                 if (gearName) subtitleParts.push(gearName);
-                subtitleParts.push(new Date(session.createdAt).toLocaleDateString());
+                subtitleParts.push(new Date(item.createdAt).toLocaleDateString());
 
                 return (
-                  <Card key={session.id} style={styles.sessionCard}>
-                    <Card.Title title={displayTitle} subtitle={subtitleParts.join(' · ')} />
-                    {session.rating != null && (
+                  <Card key={item.id} style={styles.sessionCard}>
+                    <Card.Title
+                      title={displayTitle}
+                      subtitle={subtitleParts.join(' \u00B7 ')}
+                    />
+                    {item.rating != null && (
                       <Card.Content>
-                        <Text variant="bodySmall" style={styles.rating}>Rating: {session.rating}/5</Text>
+                        <Text variant="bodySmall" style={styles.rating}>
+                          Rating: {item.rating}/5
+                        </Text>
                       </Card.Content>
                     )}
                   </Card>
@@ -120,26 +129,23 @@ export default function HomeScreen() {
             </>
           )}
 
-          {/* Quick Actions */}
           <Text variant="titleMedium" style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActions}>
+          <View style={styles.actionsRow}>
             <Button
               mode="contained"
-              buttonColor="#4f98a3"
-              textColor="#fff"
-              icon="plus"
               onPress={() => router.push('/modals/add-gear')}
               style={styles.actionButton}
+              buttonColor="#4f98a3"
+              icon="plus"
             >
               Add Gear
             </Button>
             <Button
               mode="contained"
-              buttonColor="#4f98a3"
-              textColor="#fff"
-              icon="plus"
               onPress={() => router.push('/modals/add-session')}
               style={styles.actionButton}
+              buttonColor="#4f98a3"
+              icon="plus"
             >
               Add Session
             </Button>
@@ -153,8 +159,18 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#171614' },
   content: { padding: 16, paddingBottom: 32 },
-  appTitle: { color: '#cdccca', marginBottom: 4 },
+  title: { color: '#cdccca' },
   date: { color: '#797876', marginBottom: 20 },
+  onboarding: {
+    backgroundColor: '#1c1b19',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    marginTop: 32,
+  },
+  onboardingTitle: { color: '#cdccca', marginBottom: 8 },
+  onboardingText: { color: '#797876', marginBottom: 20, textAlign: 'center' },
+  onboardingButton: { minWidth: 160 },
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   statCard: {
     flex: 1,
@@ -165,10 +181,6 @@ const styles = StyleSheet.create({
   },
   statNumber: { color: '#4f98a3' },
   statLabel: { color: '#797876', marginTop: 4 },
-  onboarding: { alignItems: 'center', marginTop: 48 },
-  onboardingTitle: { color: '#cdccca', marginBottom: 8 },
-  onboardingText: { color: '#797876', marginBottom: 20, textAlign: 'center' },
-  onboardingButton: { marginTop: 8 },
   sectionTitle: { color: '#cdccca', marginBottom: 12 },
   horizontalList: { marginBottom: 24 },
   gearCard: {
@@ -177,14 +189,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginRight: 10,
     minWidth: 140,
-    alignItems: 'center',
-    gap: 8,
   },
-  gearCardName: { color: '#cdccca' },
-  gearCardChip: { backgroundColor: '#2a2927' },
-  gearCardChipText: { color: '#797876', fontSize: 11 },
-  sessionCard: { backgroundColor: '#1c1b19', marginBottom: 8 },
+  gearName: { color: '#cdccca', marginBottom: 8 },
+  gearChip: { alignSelf: 'flex-start', backgroundColor: '#2a2927' },
+  gearChipText: { color: '#cdccca' },
+  sessionCard: { backgroundColor: '#1c1b19', marginBottom: 10 },
   rating: { color: '#4f98a3' },
-  quickActions: { flexDirection: 'row', gap: 12 },
+  actionsRow: { flexDirection: 'row', gap: 12 },
   actionButton: { flex: 1 },
 });

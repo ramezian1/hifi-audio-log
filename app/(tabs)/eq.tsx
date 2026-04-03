@@ -4,24 +4,23 @@ import { Text, FAB, Card, Searchbar } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useEQStore } from '../../store/useEQStore';
 import { useGearStore } from '../../store/useGearStore';
-import type { EQProfile } from '../../types';
 
 export default function EQScreen() {
   const profiles = useEQStore((s) => s.profiles);
   const gear = useGearStore((s) => s.gear);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredProfiles = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return profiles;
-
-    return profiles.filter((profile: EQProfile) => {
-      const nameMatch = profile.name.toLowerCase().includes(query);
-      const linkedGear = profile.gearId ? gear.find((g) => g.id === profile.gearId) : undefined;
-      const gearMatch = linkedGear ? linkedGear.name.toLowerCase().includes(query) : false;
-      return nameMatch || gearMatch;
+  const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return profiles;
+    return profiles.filter((item) => {
+      const linkedGear = item.gearId ? gear.find((g) => g.id === item.gearId) : undefined;
+      return (
+        item.name.toLowerCase().includes(q) ||
+        (linkedGear?.name ?? '').toLowerCase().includes(q)
+      );
     });
-  }, [profiles, searchQuery, gear]);
+  }, [profiles, gear, searchQuery]);
 
   return (
     <View style={styles.container}>
@@ -35,18 +34,18 @@ export default function EQScreen() {
         iconColor="#797876"
         placeholderTextColor="#797876"
       />
-      <Text variant="bodySmall" style={styles.resultCount}>
-        {filteredProfiles.length} {filteredProfiles.length === 1 ? 'profile' : 'profiles'}
+      <Text variant="bodySmall" style={styles.count}>
+        {filtered.length} profile{filtered.length !== 1 ? 's' : ''}
       </Text>
       <FlatList
-        data={filteredProfiles}
+        data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const linkedGear = item.gearId ? gear.find((g) => g.id === item.gearId) : undefined;
           const subtitle = [
             linkedGear ? linkedGear.name : null,
             `${item.bands.length} bands`,
-          ].filter(Boolean).join(' · ');
+          ].filter(Boolean).join(' \u00B7 ');
 
           return (
             <Card style={styles.card}>
@@ -77,7 +76,7 @@ const styles = StyleSheet.create({
   title: { color: '#cdccca', marginBottom: 12 },
   searchbar: { backgroundColor: '#1c1b19', marginBottom: 8 },
   searchInput: { color: '#cdccca' },
-  resultCount: { color: '#797876', marginBottom: 8 },
+  count: { color: '#797876', marginBottom: 8 },
   card: { marginBottom: 12, backgroundColor: '#1c1b19' },
   notes: { color: '#797876', marginTop: 4 },
   empty: { color: '#797876', textAlign: 'center', marginTop: 48 },
