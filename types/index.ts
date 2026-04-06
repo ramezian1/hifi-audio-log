@@ -15,16 +15,17 @@ export interface GearItem {
 
 export interface ListeningSession {
   id: string;
-  gearId?: string;       // primary gear used
+  gearId?: string;
   date: string;
-  duration?: number;     // in minutes
+  duration?: number;
   notes?: string;
-  track?: string;        // track name
-  album?: string;        // album name
+  track?: string;
+  album?: string;
   artist?: string;
-  rating?: number;       // 1-5
+  rating?: number;
   eqProfileId?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface EQProfile {
