@@ -4,6 +4,7 @@ import { GearItem } from '../../types';
 // Strip persistence so tests work without AsyncStorage I/O
 jest.mock('zustand/middleware', () => ({
   persist: (config: unknown) => config,
+  createJSONStorage: () => ({}),
 }));
 
 const makeGear = (overrides: Partial<GearItem> = {}): GearItem => ({
