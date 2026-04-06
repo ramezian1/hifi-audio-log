@@ -5,6 +5,7 @@ export interface GearItem {
   type: 'headphone' | 'iem' | 'dac' | 'amp' | 'dac/amp' | 'cable' | 'other';
   purchaseDate?: string;
   price?: number;
+  currency?: string; // e.g. 'USD', 'EUR'
   notes?: string;
   rating?: number; // 1-10
   imageUri?: string;
@@ -15,14 +16,13 @@ export interface GearItem {
 export interface ListeningSession {
   id: string;
   gearId?: string;       // primary gear used
-  gearIds?: string[];     // legacy: multiple gear links
   date: string;
-  duration?: number;      // in minutes
+  duration?: number;     // in minutes
   notes?: string;
-  track?: string;         // track or album name
-  trackOrAlbum?: string;  // legacy field
+  track?: string;        // track name
+  album?: string;        // album name
   artist?: string;
-  rating?: number;        // 1-5
+  rating?: number;       // 1-5
   eqProfileId?: string;
   createdAt: string;
 }
@@ -30,7 +30,7 @@ export interface ListeningSession {
 export interface EQProfile {
   id: string;
   name: string;
-  gearId?: string;    // optional link to a specific headphone
+  gearId?: string;       // optional link to a specific headphone
   bands: EQBand[];
   preamp: number;
   notes?: string;
@@ -39,7 +39,8 @@ export interface EQProfile {
 }
 
 export interface EQBand {
-  frequency: number;
-  gain: number;
-  q: number;
+  frequency: number;     // Hz
+  gain: number;          // dB
+  q: number;             // Q factor
+  type: 'peaking' | 'lowShelf' | 'highShelf' | 'lowPass' | 'highPass';
 }
