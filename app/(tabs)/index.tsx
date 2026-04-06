@@ -34,9 +34,6 @@ export default function HomeScreen() {
 
   const getGearName = (session: (typeof sessions)[number]): string | undefined => {
     if (session.gearId) return gear.find((g) => g.id === session.gearId)?.name;
-    if (session.gearIds && session.gearIds.length > 0) {
-      return gear.find((g) => g.id === session.gearIds![0])?.name;
-    }
     return undefined;
   };
 
@@ -104,7 +101,7 @@ export default function HomeScreen() {
               <Text variant="titleMedium" style={styles.sectionTitle}>Recent Sessions</Text>
               {recentSessions.map((item) => {
                 const gearName = getGearName(item);
-                const displayTitle = item.track || item.trackOrAlbum || 'Untitled Session';
+                const displayTitle = item.track || item.album || 'Untitled Session';
                 const subtitleParts: string[] = [];
                 if (item.artist) subtitleParts.push(item.artist);
                 if (gearName) subtitleParts.push(gearName);
