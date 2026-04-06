@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { GearItem } from '../types';
 
 interface GearStore {
@@ -14,17 +15,24 @@ export const useGearStore = create<GearStore>()(
   persist(
     (set, get) => ({
       gear: [],
-      addGear: (item) => set((state) => ({ gear: [...state.gear, item] })),
+      addGear: (item) => set((state) => ({ gear: [item, ...state.gear] })),
       updateGear: (id, updates) =>
         set((state) => ({
           gear: state.gear.map((g) =>
-            g.id === id ? { ...g, ...updates, updatedAt: new Date().toISOString() } : g
+            g.id === id
+              ? { ...g, ...updates, updatedAt: new Date().toISOString() }
+              : g
           ),
         })),
       deleteGear: (id) =>
-        set((state) => ({ gear: state.gear.filter((g) => g.id !== id) })),
+        set((state) => ({
+          gear: state.gear.filter((g) => g.id !== id),
+        })),
       getGearById: (id) => get().gear.find((g) => g.id === id),
     }),
-    { name: 'gear-storage' }
+    {
+      name: 'gear-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
   )
 );
