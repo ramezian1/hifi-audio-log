@@ -15,7 +15,7 @@ export const useGearStore = create<GearStore>()(
   persist(
     (set, get) => ({
       gear: [],
-      addGear: (item) => set((state) => ({ gear: [item, ...state.gear] })),
+          addGear: (item) => set((state) => ({ gear: [...state.gear, item] })),
       updateGear: (id, updates) =>
         set((state) => ({
           gear: state.gear.map((g) =>
