@@ -23,7 +23,8 @@ export default function EQScreen() {
     });
   }, [profiles, gear, searchQuery]);
 
-    <SafeAreaView edges={['top']} style={styles.container}>
+      return (
+        <SafeAreaView edges={['top']} style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>EQ Profiles</Text>
       <Searchbar
         placeholder="Search by profile or gear name"
