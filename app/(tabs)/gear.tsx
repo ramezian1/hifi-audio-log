@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Card, Chip, FAB, Searchbar, Text } from 'react-native-paper';
 import { useGearStore } from '../../store/useGearStore';
@@ -37,7 +38,7 @@ export default function GearScreen() {
   }, [gear, searchQuery, typeFilter]);
 
   return (
-    <View style={styles.container}>
+        <SafeAreaView edges={['top']} style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>
         My Gear
       </Text>
@@ -115,7 +116,7 @@ export default function GearScreen() {
         style={styles.fab}
         onPress={() => router.push('/modals/add-gear' as any)}
       />
-    </View>
+        </SafeAreaView>
   );
 }
 
