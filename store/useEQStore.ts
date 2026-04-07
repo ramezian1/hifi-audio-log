@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { EQProfile } from '../types';
 
 interface EQStore {
@@ -29,7 +29,7 @@ export const useEQStore = create<EQStore>()(
     }),
     {
       name: 'eq-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      getStorage: () => AsyncStorage,
     }
   )
 );
