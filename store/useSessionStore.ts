@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { ListeningSession } from '../types';
 
 interface SessionStore {
@@ -19,7 +20,9 @@ export const useSessionStore = create<SessionStore>()(
       updateSession: (id, updates) =>
         set((state) => ({
           sessions: state.sessions.map((s) =>
-            s.id === id ? { ...s, ...updates } : s
+            s.id === id
+              ? { ...s, ...updates, updatedAt: new Date().toISOString() }
+              : s
           ),
         })),
       deleteSession: (id) =>
@@ -29,6 +32,9 @@ export const useSessionStore = create<SessionStore>()(
           (s) => s.gearId === gearId || (s.gearIds && s.gearIds.includes(gearId))
         ),
     }),
-    { name: 'sessions-storage' }
+    {
+      name: 'sessions-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
   )
 );
