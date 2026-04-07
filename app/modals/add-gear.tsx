@@ -33,7 +33,7 @@ export default function AddGearModal() {
     const now = new Date().toISOString();
 
     addGear({
-      id: Date.now().toString(),
+            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       name: name.trim(),
       brand: brand.trim(),
       type,
