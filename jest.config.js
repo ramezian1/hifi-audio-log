@@ -10,11 +10,9 @@ module.exports = {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    // Stub native modules that are irrelevant for store/unit tests
     '^react-native$': '<rootDir>/node_modules/react-native/index.js',
-    '@react-native-async-storage/async-storage':
-      '@react-native-async-storage/async-storage/jest/async-storage-mock',
   },
+  setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   transformIgnorePatterns: [
     'node_modules/(?!(zustand|@react-native-async-storage)/)',
   ],
