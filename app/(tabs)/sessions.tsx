@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, FAB, Card, Chip, Searchbar } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useSessionStore } from '../../store/useSessionStore';
@@ -52,7 +53,7 @@ export default function SessionsScreen() {
   }, [sessions, searchQuery, ratingFilter, getGearName]);
 
   return (
-    <View style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>Listening Sessions</Text>
       <Searchbar
         placeholder="Search by track, artist, or gear"
@@ -114,7 +115,7 @@ export default function SessionsScreen() {
         }
       />
       <FAB icon="plus" style={styles.fab} onPress={() => router.push('/modals/add-session')} />
-    </View>
+      </SafeAreaView>
   );
 }
 
