@@ -3,6 +3,7 @@ import { EQProfile, EQBand } from '../../types';
 
 jest.mock('zustand/middleware', () => ({
   persist: (config: unknown) => config,
+    createJSONStorage: (fn: unknown) => fn,
 }));
 
 const makeEQBand = (overrides: Partial<EQBand> = {}): EQBand => ({
