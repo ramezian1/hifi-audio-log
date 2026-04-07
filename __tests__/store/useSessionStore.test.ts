@@ -3,12 +3,14 @@ import { ListeningSession } from '../../types';
 
 jest.mock('zustand/middleware', () => ({
   persist: (config: unknown) => config,
+    createJSONStorage: () => ({}),
 }));
 
 const makeSession = (overrides: Partial<ListeningSession> = {}): ListeningSession => ({
   id: 'session-1',
   date: '2024-03-01',
   createdAt: '2024-03-01T10:00:00.000Z',
+    updatedAt: '2024-03-01T10:00:00.000Z',
   ...overrides,
 });
 
