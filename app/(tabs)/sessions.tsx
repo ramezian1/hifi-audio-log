@@ -40,7 +40,7 @@ export default function SessionsScreen() {
       if (ratingFilter !== 0 && item.rating !== ratingFilter) return false;
       if (q) {
         const gearName = getGearName(item) ?? '';
-        const title = item.track || item.trackOrAlbum || '';
+                const title = item.track || item.album || '';
         return (
           title.toLowerCase().includes(q) ||
           (item.artist ?? '').toLowerCase().includes(q) ||
@@ -85,7 +85,7 @@ export default function SessionsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const gearName = getGearName(item);
-          const displayTitle = item.track || item.trackOrAlbum || 'Untitled Session';
+                  const displayTitle = item.track || item.album || 'Untitled Session';
           const subtitleParts: string[] = [];
           if (item.artist) subtitleParts.push(item.artist);
           if (gearName) subtitleParts.push(gearName);
