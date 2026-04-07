@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Card, Chip, Button, Surface } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useGearStore } from '../../store/useGearStore';
@@ -38,6 +39,7 @@ export default function HomeScreen() {
   };
 
   return (
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text variant="headlineMedium" style={styles.title}>Hi-Fi Audio Log</Text>
       <Text variant="bodyMedium" style={styles.date}>{today}</Text>
@@ -150,6 +152,7 @@ export default function HomeScreen() {
         </>
       )}
     </ScrollView>
+          </SafeAreaView>
   );
 }
 
