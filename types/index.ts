@@ -16,6 +16,7 @@ export interface GearItem {
 export interface ListeningSession {
   id: string;
   gearId?: string;
+    gearIds?: string[];
   date: string;
   duration?: number;
   notes?: string;
