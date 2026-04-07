@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, FAB, Card, Searchbar } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useEQStore } from '../../store/useEQStore';
@@ -22,8 +23,7 @@ export default function EQScreen() {
     });
   }, [profiles, gear, searchQuery]);
 
-  return (
-    <View style={styles.container}>
+    <SafeAreaView edges={['top']} style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>EQ Profiles</Text>
       <Searchbar
         placeholder="Search by profile or gear name"
@@ -67,7 +67,7 @@ export default function EQScreen() {
         }
       />
       <FAB icon="plus" style={styles.fab} onPress={() => router.push('/modals/add-eq')} />
-    </View>
+      </SafeAreaView>
   );
 }
 
