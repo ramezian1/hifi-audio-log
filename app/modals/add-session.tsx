@@ -28,7 +28,7 @@ export default function AddSessionModal() {
   const handleSubmit = () => {
     const now = new Date().toISOString();
     addSession({
-      id: Date.now().toString(),
+            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       gearId: gearId || undefined,
       date: now,
       track: track.trim() || undefined,
@@ -36,6 +36,7 @@ export default function AddSessionModal() {
       notes: notes.trim() || undefined,
       rating: rating ? parseInt(rating, 10) : undefined,
       createdAt: now,
+            updatedAt: now,
     });
     router.back();
   };
