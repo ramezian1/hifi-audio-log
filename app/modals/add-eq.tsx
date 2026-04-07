@@ -15,7 +15,7 @@ export default function AddEQModal() {
   const gear = useGearStore((s) => s.gear);
   const [name, setName] = useState('');
   const [gearId, setGearId] = useState('');
-  const [bands, setBands] = useState<EQBand[]>([createDefaultBand()]);
+    const [bands, setBands] = useState<EQBand[]>(() => [createDefaultBand()]);
   const [menuVisible, setMenuVisible] = useState(false);
 
   const selectedGear = gear.find((g) => g.id === gearId);
@@ -41,7 +41,7 @@ export default function AddEQModal() {
     if (!name.trim() || bands.length === 0) return;
     const now = new Date().toISOString();
     addProfile({
-      id: Date.now().toString(),
+            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       name: name.trim(),
       gearId: gearId || undefined,
       bands,
