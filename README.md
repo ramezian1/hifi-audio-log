@@ -19,10 +19,10 @@ A mobile app to track your headphone/DAC gear, listening notes, and EQ profiles.
 
 ```bash
 # Install dependencies
-npm install
+npm install --legacy-peer-deps
 
-# Start Expo dev server
-npx expo start
+# Start the dev server
+npm start
 ```
 
 ## Project Structure
