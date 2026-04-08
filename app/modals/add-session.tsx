@@ -28,7 +28,7 @@ export default function AddSessionModal() {
   const handleSubmit = () => {
     const now = new Date().toISOString();
     addSession({
-            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       gearId: gearId || undefined,
       date: now,
       track: track.trim() || undefined,
@@ -36,7 +36,7 @@ export default function AddSessionModal() {
       notes: notes.trim() || undefined,
       rating: rating ? parseInt(rating, 10) : undefined,
       createdAt: now,
-            updatedAt: now,
+      updatedAt: now,
     });
     router.back();
   };
@@ -44,58 +44,54 @@ export default function AddSessionModal() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text variant="labelMedium" style={styles.label}>Gear</Text>
-      <Menu
-        visible={menuVisible}
-        onDismiss={() => setMenuVisible(false)}
-        anchor={
-          <Button
-            mode="outlined"
-            onPress={() => setMenuVisible(true)}
-            style={styles.menuButton}
-            contentStyle={styles.menuButtonContent}
-          >
-            {selectedGear ? selectedGear.name : 'Select gear...'}
-          </Button>
-        }
-        contentStyle={styles.menuContent}
-      >
-        <Menu.Item
-          onPress={() => { setGearId(''); setMenuVisible(false); }}
-          title="None"
-        />
-        {gear.map((g) => (
+      <View style={styles.menuWrapper}>
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Button
+              mode="outlined"
+              onPress={() => setMenuVisible(true)}
+              style={styles.menuButton}
+              contentStyle={styles.menuButtonContent}
+            >
+              {selectedGear ? selectedGear.name : 'Select gear...'}
+            </Button>
+          }
+          contentStyle={styles.menuContent}
+        >
           <Menu.Item
-            key={g.id}
-            onPress={() => { setGearId(g.id); setMenuVisible(false); }}
-            title={`${g.name} (${g.brand})`}
+            onPress={() => { setGearId(''); setMenuVisible(false); }}
+            title="None"
           />
-        ))}
-      </Menu>
+          {gear.map((g) => (
+            <Menu.Item
+              key={g.id}
+              onPress={() => { setGearId(g.id); setMenuVisible(false); }}
+              title={`${g.name} (${g.brand})`}
+            />
+          ))}
+        </Menu>
+      </View>
 
       <TextInput
-        label="Track / Album"
+        label="Track"
         value={track}
         onChangeText={setTrack}
-        placeholder="What were you listening to?"
-        mode="outlined"
         style={styles.input}
       />
       <TextInput
         label="Artist"
         value={artist}
         onChangeText={setArtist}
-        placeholder="e.g. Pink Floyd"
-        mode="outlined"
         style={styles.input}
       />
       <TextInput
         label="Notes"
         value={notes}
         onChangeText={setNotes}
-        placeholder="Optional notes..."
-        mode="outlined"
         multiline
-        numberOfLines={4}
+        numberOfLines={3}
         style={styles.input}
       />
 
@@ -108,7 +104,7 @@ export default function AddSessionModal() {
       />
 
       <View style={styles.buttonRow}>
-        <Button mode="outlined" onPress={() => router.back()} style={styles.button}>
+        <Button onPress={() => router.back()} style={styles.button}>
           Cancel
         </Button>
         <Button mode="contained" onPress={handleSubmit} style={styles.button}>
@@ -125,6 +121,7 @@ const styles = StyleSheet.create({
   input: { backgroundColor: '#1c1b19' },
   label: { color: '#797876', marginTop: 4 },
   segmented: { marginBottom: 4 },
+  menuWrapper: { width: '100%' },
   menuButton: { alignSelf: 'stretch' },
   menuButtonContent: { justifyContent: 'flex-start' },
   menuContent: { backgroundColor: '#1c1b19' },
