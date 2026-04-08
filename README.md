@@ -29,17 +29,28 @@ npm start
 
 ```
 hifi-audio-log/
-├── app/                  # Expo Router screens
-│   ├── (tabs)/
-│   │   ├── gear.tsx      # Gear inventory
-│   │   ├── sessions.tsx  # Listening sessions
-│   │   └── eq.tsx        # EQ profiles
-│   └── _layout.tsx
-├── components/           # Reusable UI components
-├── store/                # State management
-├── types/                # TypeScript interfaces
-├── constants/            # App-wide constants
-└── assets/               # Icons, fonts, images
+├── app/                    # Expo Router screens
+│   ├── (tabs)/             # Tab navigator screens
+│   │   ├── _layout.tsx     # Tab bar layout
+│   │   ├── index.tsx       # Home / dashboard
+│   │   ├── gear.tsx        # Gear list screen
+│   │   ├── sessions.tsx    # Listening sessions screen
+│   │   └── eq.tsx          # EQ profiles screen
+│   ├── gear/               # Gear stack screens
+│   │   └── [id].tsx        # Gear detail screen
+│   ├── modals/             # Modal screens
+│   │   ├── add-gear.tsx    # Add gear modal
+│   │   ├── add-session.tsx # Add session modal
+│   │   └── add-eq.tsx      # Add EQ profile modal
+│   ├── _layout.tsx         # Root stack layout
+│   ├── index.tsx           # Entry point
+│   └── +not-found.tsx      # 404 screen
+├── components/             # Reusable UI components
+├── store/                  # Zustand state management
+├── types/                  # TypeScript interfaces
+├── constants/              # App-wide constants
+├── utils/                  # Utility functions (export/import)
+└── __tests__/              # Jest unit tests
 ```
 
 ## Roadmap
