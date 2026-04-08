@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, FAB, Card, Chip, Searchbar } from 'react-native-paper';
+import { Swipeable } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { useSessionStore } from '../../store/useSessionStore';
 import { useGearStore } from '../../store/useGearStore';
@@ -18,6 +19,7 @@ const RATING_FILTERS: { label: string; value: number }[] = [
 
 export default function SessionsScreen() {
   const sessions = useSessionStore((s) => s.sessions);
+  const deleteSession = useSessionStore((s) => s.deleteSession);
   const gear = useGearStore((s) => s.gear);
   const [searchQuery, setSearchQuery] = useState('');
   const [ratingFilter, setRatingFilter] = useState(0);
@@ -41,7 +43,7 @@ export default function SessionsScreen() {
       if (ratingFilter !== 0 && item.rating !== ratingFilter) return false;
       if (q) {
         const gearName = getGearName(item) ?? '';
-                const title = item.track || item.album || '';
+        const title = item.track || item.album || '';
         return (
           title.toLowerCase().includes(q) ||
           (item.artist ?? '').toLowerCase().includes(q) ||
@@ -52,8 +54,27 @@ export default function SessionsScreen() {
     });
   }, [sessions, searchQuery, ratingFilter, getGearName]);
 
+  const handleDelete = (id: string, title: string) => {
+    Alert.alert(
+      'Delete Session',
+      `Remove "${title}" from your sessions?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteSession(id) },
+      ]
+    );
+  };
+
+  const renderRightActions = (id: string, title: string) => (
+    <View style={styles.deleteAction}>
+      <Text style={styles.deleteText} onPress={() => handleDelete(id, title)}>
+        Delete
+      </Text>
+    </View>
+  );
+
   return (
-      <SafeAreaView edges={['top']} style={styles.container}>
+    <SafeAreaView edges={['top']} style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>Listening Sessions</Text>
       <Searchbar
         placeholder="Search by track, artist, or gear"
@@ -86,24 +107,28 @@ export default function SessionsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const gearName = getGearName(item);
-                  const displayTitle = item.track || item.album || 'Untitled Session';
+          const displayTitle = item.track || item.album || 'Untitled Session';
           const subtitleParts: string[] = [];
           if (item.artist) subtitleParts.push(item.artist);
           if (gearName) subtitleParts.push(gearName);
           subtitleParts.push(new Date(item.createdAt).toLocaleDateString());
-
           return (
-            <Card style={styles.card}>
-              <Card.Title
-                title={displayTitle}
-                subtitle={subtitleParts.join(' \u00B7 ')}
-              />
-              {item.rating != null && (
-                <Card.Content>
-                  <Text variant="bodySmall" style={styles.rating}>Rating: {item.rating}/5</Text>
-                </Card.Content>
-              )}
-            </Card>
+            <Swipeable
+              renderRightActions={() => renderRightActions(item.id, displayTitle)}
+              overshootRight={false}
+            >
+              <Card style={styles.card}>
+                <Card.Title
+                  title={displayTitle}
+                  subtitle={subtitleParts.join(' · ')}
+                />
+                {item.rating != null && (
+                  <Card.Content>
+                    <Text style={styles.rating}>Rating: {item.rating}/5</Text>
+                  </Card.Content>
+                )}
+              </Card>
+            </Swipeable>
           );
         }}
         ListEmptyComponent={
@@ -114,8 +139,12 @@ export default function SessionsScreen() {
           </Text>
         }
       />
-      <FAB icon="plus" style={styles.fab} onPress={() => router.push('/modals/add-session')} />
-      </SafeAreaView>
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => router.push('/modals/add-session')}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -134,4 +163,13 @@ const styles = StyleSheet.create({
   rating: { color: '#4f98a3' },
   empty: { color: '#797876', textAlign: 'center', marginTop: 48 },
   fab: { position: 'absolute', right: 16, bottom: 16, backgroundColor: '#4f98a3' },
+  deleteAction: {
+    backgroundColor: '#c0392b',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  deleteText: { color: '#fff', fontWeight: 'bold' },
 });
