@@ -117,18 +117,18 @@ export default function SessionsScreen() {
               renderRightActions={() => renderRightActions(item.id, displayTitle)}
               overshootRight={false}
             >
-              <Card style={styles.card}>
-                <Card.Title
-                  title={displayTitle}
-                  subtitle={subtitleParts.join(' · ')}
-                />
-                {item.rating != null && (
-                  <Card.Content>
-                    <Text style={styles.rating}>Rating: {item.rating}/5</Text>
-                  </Card.Content>
-                )}
-              </Card>
-            </Swipeable>
+            <Card style={styles.card} onPress={() => router.push(`/sessions/${item.id}` as any)}>
+  <Card.Title
+    title={displayTitle}
+    subtitle={subtitleParts.join(' · ')}
+  />
+  {item.rating != null && (
+    <Card.Content>
+      <Text style={styles.rating}>Rating: {item.rating}/5</Text>
+    </Card.Content>
+  )}
+</Card>
+</Swipeable>
           );
         }}
         ListEmptyComponent={
