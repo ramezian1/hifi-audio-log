@@ -30,6 +30,15 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+  name="sessions/[id]"
+  options={{
+    headerShown: true,
+    title: 'Session Detail',
+    headerStyle: { backgroundColor: '#1c1b19' },
+    headerTintColor: '#cdccca',
+  }}
+/>
+          <Stack.Screen
             name="modals/add-session"
             options={{
               presentation: 'modal',
@@ -49,6 +58,7 @@ export default function RootLayout() {
               headerTintColor: '#cdccca',
             }}
           />
+          
           <Stack.Screen name="+not-found" />
         </Stack>
       </PaperProvider>
