@@ -111,7 +111,7 @@ export default function SessionsScreen() {
           const subtitleParts: string[] = [];
           if (item.artist) subtitleParts.push(item.artist);
           if (gearName) subtitleParts.push(gearName);
-          subtitleParts.push(new Date(item.createdAt).toLocaleDateString());
+          subtitleParts.push(new Date(item.date).toLocaleDateString());
           return (
             <Swipeable
               renderRightActions={() => renderRightActions(item.id, displayTitle)}
