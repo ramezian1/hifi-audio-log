@@ -40,6 +40,7 @@ export default function AddEQModal() {
   const updateProfile = useEQStore((s) => s.updateProfile);
   const profiles = useEQStore((s) => s.profiles);
   const gear = useGearStore((s) => s.gear);
+}
 
   const editingProfile = useMemo(
     () => (id ? profiles.find((p) => p.id === id) : undefined),
