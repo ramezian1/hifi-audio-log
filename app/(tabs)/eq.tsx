@@ -9,6 +9,7 @@ import { useGearStore } from '../../store/useGearStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import { EQCurveChart } from '../../components/EQCurveChart';
 import type { EQProfile } from '../../types';
+import { Pressable } from 'react-native';
 
 export default function EQScreen() {
   const profiles = useEQStore((s) => s.profiles);
@@ -51,10 +52,10 @@ export default function EQScreen() {
   };
 
   const renderRightActions = (id: string, name: string) => (
-    <View style={styles.deleteAction}>
-      <Text style={styles.deleteText} onPress={() => handleDelete(id, name)}>Delete</Text>
-    </View>
-  );
+  <Pressable style={styles.deleteAction} onPress={() => handleDelete(id, name)}>
+    <Text style={styles.deleteText}>Delete</Text>
+  </Pressable>
+);
 
   const renderItem = ({ item }: { item: EQProfile }) => {
     const linkedGear = item.gearId ? gear.find((g) => g.id === item.gearId) : undefined;
@@ -135,12 +136,12 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', marginTop: 48 },
   fab: { position: 'absolute', right: 16, bottom: 16 },
   deleteAction: {
-    backgroundColor: '#c0392b',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    marginBottom: 12,
-    borderRadius: 8,
-  },
+  backgroundColor: '#c0392b',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: 104,
+  marginBottom: 12,
+  borderRadius: 8,
+},
   deleteText: { color: '#fff', fontWeight: 'bold' },
 });
