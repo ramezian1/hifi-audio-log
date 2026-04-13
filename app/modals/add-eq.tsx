@@ -53,9 +53,8 @@ export default function AddEQModal() {
   const [bands, setBands] = useState<EQBand[]>([createDefaultBand()]);
   const [menuVisible, setMenuVisible] = useState(false);
 
-  useEffect(() => {
-    if (!editingProfile) return;
-
+useEffect(() => {
+  if (editingProfile) {
     setName(editingProfile.name);
     setGearId(editingProfile.gearId ?? '');
     setNotes(editingProfile.notes ?? '');
@@ -65,7 +64,16 @@ export default function AddEQModal() {
         ? editingProfile.bands.map(sanitizeBand)
         : [createDefaultBand()]
     );
-  }, [editingProfile]);
+  } else {
+    setName('');
+    setGearId('');
+    setNotes('');
+    setPreamp('0');
+    setBands([createDefaultBand()]);
+  }
+
+  setMenuVisible(false);
+}, [editingProfile]);
 
   const selectedGear = gear.find((g) => g.id === gearId);
 
