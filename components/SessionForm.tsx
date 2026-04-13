@@ -40,22 +40,30 @@ interface SessionFormProps {
   }) => void;
 }
 
-const ISO_LOCAL_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+// MM/DD/YYYY HH:mm
+const FRIENDLY_RE = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/;
 
-function toLocalDateTimeInput(value?: string) {
-  if (!value) {
-    const now = new Date();
-    const tzOffset = now.getTimezoneOffset() * 60000;
-    return new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
-  }
-  const d = new Date(value);
+/** Convert any ISO string (or undefined) -> "MM/DD/YYYY HH:mm" local time */
+function toFriendlyDateTime(value?: string): string {
+  const d = value ? new Date(value) : new Date();
   if (Number.isNaN(d.getTime())) return '';
-  const tzOffset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${mm}/${dd}/${yyyy} ${hh}:${min}`;
 }
 
-function fromLocalDateTimeInput(value: string) {
-  return new Date(value).toISOString();
+/** Convert "MM/DD/YYYY HH:mm" -> ISO string for storage */
+function fromFriendlyDateTime(value: string): string {
+  // value: "MM/DD/YYYY HH:mm"
+  const [datePart, timePart] = value.trim().split(' ');
+  if (!datePart || !timePart) return new Date().toISOString();
+  const [mm, dd, yyyy] = datePart.split('/');
+  const [hh, min] = timePart.split(':');
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(min));
+  return d.toISOString();
 }
 
 function toFormValues(initialValues?: Partial<ListeningSession>): SessionFormValues {
@@ -66,7 +74,7 @@ function toFormValues(initialValues?: Partial<ListeningSession>): SessionFormVal
     album: initialValues?.album ?? '',
     notes: initialValues?.notes ?? '',
     rating: initialValues?.rating != null ? String(initialValues.rating) : '',
-    date: toLocalDateTimeInput(initialValues?.date),
+    date: toFriendlyDateTime(initialValues?.date),
     duration: initialValues?.duration != null ? String(initialValues.duration) : '',
   };
 }
@@ -89,8 +97,8 @@ export function SessionForm({
 
   const errors = useMemo(() => {
     const next: Partial<Record<keyof SessionFormValues, string>> = {};
-    if (!values.date.trim() || !ISO_LOCAL_RE.test(values.date.trim())) {
-      next.date = 'Use a valid date/time.';
+    if (!values.date.trim() || !FRIENDLY_RE.test(values.date.trim())) {
+      next.date = 'Use format MM/DD/YYYY HH:mm (e.g. 04/13/2026 21:30)';
     }
     if (values.rating.trim()) {
       const parsedRating = Number(values.rating);
@@ -125,15 +133,15 @@ export function SessionForm({
       album: values.album.trim() || undefined,
       notes: values.notes.trim() || undefined,
       rating: values.rating.trim() ? Number(values.rating) : undefined,
-      date: fromLocalDateTimeInput(values.date.trim()),
+      date: fromFriendlyDateTime(values.date.trim()),
       duration: values.duration.trim() ? Number(values.duration) : undefined,
     });
   };
 
   return (
-    <View style={styles.form}>
+    <ScrollView contentContainerStyle={styles.form}>
       {/* Gear selector */}
-      <Text variant="labelMedium" style={styles.label}>Gear</Text>
+      <Text style={styles.label}>Gear</Text>
       <TouchableOpacity
         style={styles.gearButton}
         onPress={() => setGearPickerOpen((v) => !v)}
@@ -142,16 +150,12 @@ export function SessionForm({
         <Text style={styles.gearButtonText}>
           {selectedGear ? `${selectedGear.name} (${selectedGear.brand})` : 'Select gear...'}
         </Text>
-        <Text style={styles.gearButtonChevron}>{gearPickerOpen ? '▲' : '▼'}</Text>
+        <Text style={styles.gearButtonChevron}>{gearPickerOpen ? '\u25b2' : '\u25bc'}</Text>
       </TouchableOpacity>
-
       {gearPickerOpen && (
         <View style={styles.gearList}>
           <TouchableOpacity
-            style={[
-              styles.gearOption,
-              values.gearId === '' && styles.gearOptionSelected,
-            ]}
+            style={styles.gearOption}
             onPress={() => {
               updateField('gearId', '');
               setGearPickerOpen(false);
@@ -159,7 +163,6 @@ export function SessionForm({
           >
             <Text style={styles.gearOptionText}>None</Text>
           </TouchableOpacity>
-          <Divider style={styles.divider} />
           {gear.length === 0 ? (
             <Text style={styles.gearEmpty}>No gear added yet. Add gear first.</Text>
           ) : (
@@ -182,7 +185,7 @@ export function SessionForm({
           )}
         </View>
       )}
-
+      <Divider style={styles.divider} />
       <TextInput
         label="Track"
         value={values.track}
@@ -192,7 +195,6 @@ export function SessionForm({
         error={!!errors.track}
       />
       <HelperText type="error" visible={!!errors.track}>{errors.track}</HelperText>
-
       <TextInput
         label="Artist"
         value={values.artist}
@@ -200,7 +202,6 @@ export function SessionForm({
         mode="outlined"
         style={styles.input}
       />
-
       <TextInput
         label="Album"
         value={values.album}
@@ -208,18 +209,17 @@ export function SessionForm({
         mode="outlined"
         style={styles.input}
       />
-
       <TextInput
-        label="Session Date/Time"
+        label="Date & Time"
         value={values.date}
         onChangeText={(value) => updateField('date', value)}
         mode="outlined"
-        placeholder="YYYY-MM-DDTHH:mm"
+        placeholder="MM/DD/YYYY HH:mm"
         style={styles.input}
         error={!!errors.date}
+        keyboardType="numbers-and-punctuation"
       />
       <HelperText type="error" visible={!!errors.date}>{errors.date}</HelperText>
-
       <TextInput
         label="Duration (minutes)"
         value={values.duration}
@@ -230,7 +230,6 @@ export function SessionForm({
         error={!!errors.duration}
       />
       <HelperText type="error" visible={!!errors.duration}>{errors.duration}</HelperText>
-
       <TextInput
         label="Notes"
         value={values.notes}
@@ -240,8 +239,7 @@ export function SessionForm({
         numberOfLines={3}
         style={styles.input}
       />
-
-      <Text variant="labelMedium" style={styles.label}>Rating</Text>
+      <Text style={styles.label}>Rating</Text>
       <SegmentedButtons
         value={values.rating}
         onValueChange={(value) => updateField('rating', value)}
@@ -249,18 +247,23 @@ export function SessionForm({
         style={styles.segmented}
       />
       <HelperText type="error" visible={!!errors.rating}>{errors.rating}</HelperText>
-
       <View style={styles.buttonRow}>
         {onCancel ? (
           <Button mode="outlined" onPress={onCancel} style={styles.button}>
             Cancel
           </Button>
         ) : null}
-        <Button mode="contained" onPress={handleSubmit} style={styles.button} disabled={hasErrors}>
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          disabled={hasErrors}
+          style={styles.button}
+          buttonColor="#4f98a3"
+        >
           {submitLabel}
         </Button>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
