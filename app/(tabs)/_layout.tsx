@@ -1,17 +1,25 @@
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useThemeStore } from '../../store/useThemeStore';
 
 export default function TabsLayout() {
+  const isDark = useThemeStore((s) => s.isDark);
+
+  const tabBarBg = isDark ? '#1c1b19' : '#ffffff';
+  const tabBarBorder = isDark ? '#393836' : '#e0dedd';
+  const tabBarActive = isDark ? '#4f98a3' : '#2e7a85';
+  const tabBarInactive = isDark ? '#797876' : '#9a9896';
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#1c1b19',
-          borderTopColor: '#393836',
+          backgroundColor: tabBarBg,
+          borderTopColor: tabBarBorder,
         },
-        tabBarActiveTintColor: '#4f98a3',
-        tabBarInactiveTintColor: '#797876',
+        tabBarActiveTintColor: tabBarActive,
+        tabBarInactiveTintColor: tabBarInactive,
       }}
     >
       <Tabs.Screen
