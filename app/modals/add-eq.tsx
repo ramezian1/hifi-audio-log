@@ -34,14 +34,6 @@ function sanitizeBand(band: EQBand): EQBand {
   };
 }
 
-export default function AddEQModal() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const addProfile = useEQStore((s) => s.addProfile);
-  const updateProfile = useEQStore((s) => s.updateProfile);
-  const profiles = useEQStore((s) => s.profiles);
-  const gear = useGearStore((s) => s.gear);
-}
-
   const editingProfile = useMemo(
     () => (id ? profiles.find((p) => p.id === id) : undefined),
     [id, profiles]
@@ -53,6 +45,14 @@ export default function AddEQModal() {
   const [preamp, setPreamp] = useState('0');
   const [bands, setBands] = useState<EQBand[]>([createDefaultBand()]);
   const [menuVisible, setMenuVisible] = useState(false);
+
+export default function AddEQModal() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const addProfile = useEQStore((s) => s.addProfile);
+  const updateProfile = useEQStore((s) => s.updateProfile);
+  const profiles = useEQStore((s) => s.profiles);
+  const gear = useGearStore((s) => s.gear);
+}
 
 useEffect(() => {
   if (editingProfile) {
