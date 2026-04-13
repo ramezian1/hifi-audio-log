@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { EQProfile } from '../types';
 
 interface EQStore {
@@ -9,6 +9,7 @@ interface EQStore {
   updateProfile: (id: string, updates: Partial<EQProfile>) => void;
   deleteProfile: (id: string) => void;
   getProfileById: (id: string) => EQProfile | undefined;
+  replaceAllProfiles: (items: EQProfile[]) => void;
 }
 
 export const useEQStore = create<EQStore>()(
@@ -26,10 +27,11 @@ export const useEQStore = create<EQStore>()(
       deleteProfile: (id) =>
         set((state) => ({ profiles: state.profiles.filter((p) => p.id !== id) })),
       getProfileById: (id) => get().profiles.find((p) => p.id === id),
+      replaceAllProfiles: (items) => set({ profiles: items }),
     }),
     {
       name: 'eq-storage',
-      getStorage: () => AsyncStorage,
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );
