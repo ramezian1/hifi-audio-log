@@ -6,7 +6,7 @@ A mobile app to track your headphone/DAC gear, listening sessions, and EQ profil
 
 - 🎧 **Gear inventory** — add, edit, and delete headphones, DACs, amps, IEMs, cables, and more
 - 📝 **Listening sessions** — log tracks, artists, albums, notes, ratings (1–5), date/time, and duration
-- 🎛️ **EQ profiles** — store and compare EQ band settings linked to specific gear
+- 🎛️ **EQ profiles** — store EQ band settings with a live frequency response curve visualizer
 - 📊 **Home dashboard** — recent gear, recent sessions, and stats at a glance
 - 💾 **Backup & Restore** — export all data to JSON and re-import it anytime
 - 🔍 **Search & filter** — filter sessions by rating and search by track, artist, or gear name
@@ -20,6 +20,7 @@ A mobile app to track your headphone/DAC gear, listening sessions, and EQ profil
 - **Navigation:** Expo Router (file-based)
 - **State / Storage:** Zustand + AsyncStorage (persisted, local-first)
 - **UI:** React Native Paper (Material Design 3, dark + light themes)
+- **Charts:** react-native-svg (biquad DSP frequency response rendering)
 - **Testing:** Jest + React Native Testing Library (82 unit tests)
 
 ## Getting Started
@@ -44,7 +45,7 @@ hifi-audio-log/
 │   │   ├── index.tsx           # Home / dashboard
 │   │   ├── gear.tsx            # Gear list screen
 │   │   ├── sessions.tsx        # Listening sessions screen
-│   │   └── eq.tsx              # EQ profiles screen
+│   │   └── eq.tsx              # EQ profiles screen (with curve chart)
 │   ├── gear/
 │   │   └── [id].tsx            # Gear detail & edit screen
 │   ├── sessions/
@@ -58,11 +59,12 @@ hifi-audio-log/
 │   ├── index.tsx               # Entry point
 │   └── +not-found.tsx          # 404 screen
 ├── components/                 # Reusable UI components
+│   ├── EQCurveChart.tsx        # Biquad DSP frequency response SVG chart
+│   ├── EQProfileCard.tsx       # EQ profile card
 │   ├── GearForm.tsx            # Shared gear add/edit form
 │   ├── GearCard.tsx            # Gear list card
 │   ├── SessionForm.tsx         # Shared session add/edit form
-│   ├── SessionRow.tsx          # Session list row
-│   └── EQProfileCard.tsx       # EQ profile card
+│   └── SessionRow.tsx          # Session list row
 ├── store/                      # Zustand state management
 │   ├── useGearStore.ts
 │   ├── useSessionStore.ts
@@ -96,6 +98,8 @@ hifi-audio-log/
 
 - Each EQ profile supports up to 10 bands with frequency, gain, Q, and filter type
 - Profiles can optionally be linked to a specific piece of gear
+- Each profile card displays a **live frequency response curve** computed from the band settings using biquad DSP math (peaking, low shelf, high shelf filters)
+- The curve renders on a log-frequency axis (20Hz–20kHz) with ±18dB range
 
 ### Theme Toggle
 
@@ -114,8 +118,7 @@ hifi-audio-log/
 - [x] Backup & Restore modal
 - [x] Friendly date format (MM/DD/YYYY HH:mm)
 - [x] Dark/light theme toggle
-- [ ] EQ curve visualizer
-- [ ] Image attachments for gear
+- [x] EQ curve visualizer
 
 ## License
 
