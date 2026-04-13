@@ -7,7 +7,7 @@ import { useGearStore } from '../../store/useGearStore';
 import { EQBand } from '../../types';
 
 function createDefaultBand(): EQBand {
-  return { frequency: 1000, gain: 0, q: 1 };
+  return { frequency: 1000, gain: 0, q: 1, type: 'peaking' };
 }
 
 export default function AddEQModal() {
