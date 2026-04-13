@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { TextInput, Button, Text, Menu, IconButton, Card } from 'react-native-paper';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { TextInput, Button, Text, IconButton, Card, Divider } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useEQStore } from '../../store/useEQStore';
 import { useGearStore } from '../../store/useGearStore';
@@ -15,8 +15,8 @@ export default function AddEQModal() {
   const gear = useGearStore((s) => s.gear);
   const [name, setName] = useState('');
   const [gearId, setGearId] = useState('');
-    const [bands, setBands] = useState<EQBand[]>(() => [createDefaultBand()]);
-  const [menuVisible, setMenuVisible] = useState(false);
+  const [bands, setBands] = useState<EQBand[]>(() => [createDefaultBand()]);
+  const [gearPickerOpen, setGearPickerOpen] = useState(false);
 
   const selectedGear = gear.find((g) => g.id === gearId);
 
@@ -41,7 +41,7 @@ export default function AddEQModal() {
     if (!name.trim() || bands.length === 0) return;
     const now = new Date().toISOString();
     addProfile({
-            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       name: name.trim(),
       gearId: gearId || undefined,
       bands,
@@ -63,34 +63,43 @@ export default function AddEQModal() {
         style={styles.input}
       />
 
-      <Text variant="labelMedium" style={styles.label}>Gear</Text>
-      <Menu
-        visible={menuVisible}
-        onDismiss={() => setMenuVisible(false)}
-        anchor={
-          <Button
-            mode="outlined"
-            onPress={() => setMenuVisible(true)}
-            style={styles.menuButton}
-            contentStyle={styles.menuButtonContent}
-          >
-            {selectedGear ? selectedGear.name : 'Select gear...'}
-          </Button>
-        }
-        contentStyle={styles.menuContent}
+      <Text variant="labelMedium" style={styles.label}>Gear (optional)</Text>
+      <TouchableOpacity
+        style={styles.gearButton}
+        onPress={() => setGearPickerOpen((v) => !v)}
+        activeOpacity={0.7}
       >
-        <Menu.Item
-          onPress={() => { setGearId(''); setMenuVisible(false); }}
-          title="None"
-        />
-        {gear.map((g) => (
-          <Menu.Item
-            key={g.id}
-            onPress={() => { setGearId(g.id); setMenuVisible(false); }}
-            title={`${g.name} (${g.brand})`}
-          />
-        ))}
-      </Menu>
+        <Text style={styles.gearButtonText}>
+          {selectedGear ? `${selectedGear.name} (${selectedGear.brand})` : 'Select gear...'}
+        </Text>
+        <Text style={styles.gearButtonChevron}>{gearPickerOpen ? '▲' : '▼'}</Text>
+      </TouchableOpacity>
+
+      {gearPickerOpen && (
+        <View style={styles.gearList}>
+          <TouchableOpacity
+            style={[styles.gearOption, gearId === '' && styles.gearOptionSelected]}
+            onPress={() => { setGearId(''); setGearPickerOpen(false); }}
+          >
+            <Text style={styles.gearOptionText}>None</Text>
+          </TouchableOpacity>
+          <Divider style={styles.divider} />
+          {gear.length === 0 ? (
+            <Text style={styles.gearEmpty}>No gear added yet. Add gear first.</Text>
+          ) : (
+            gear.map((g) => (
+              <TouchableOpacity
+                key={g.id}
+                style={[styles.gearOption, gearId === g.id && styles.gearOptionSelected]}
+                onPress={() => { setGearId(g.id); setGearPickerOpen(false); }}
+              >
+                <Text style={styles.gearOptionText}>{g.name} ({g.brand})</Text>
+                <Text style={styles.gearOptionType}>{g.type}</Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      )}
 
       <View style={styles.bandsHeader}>
         <Text variant="titleMedium" style={styles.bandsTitle}>
@@ -152,7 +161,12 @@ export default function AddEQModal() {
         <Button mode="outlined" onPress={() => router.back()} style={styles.button}>
           Cancel
         </Button>
-        <Button mode="contained" onPress={handleSubmit} style={styles.button} disabled={!name.trim() || bands.length === 0}>
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          style={styles.button}
+          disabled={!name.trim() || bands.length === 0}
+        >
           Save
         </Button>
       </View>
@@ -165,9 +179,34 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 12 },
   input: { backgroundColor: '#1c1b19' },
   label: { color: '#797876', marginTop: 4 },
-  menuButton: { alignSelf: 'stretch' },
-  menuButtonContent: { justifyContent: 'flex-start' },
-  menuContent: { backgroundColor: '#1c1b19' },
+  gearButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#4f98a3',
+    borderRadius: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#1c1b19',
+    marginBottom: 4,
+  },
+  gearButtonText: { color: '#cdccca', flex: 1 },
+  gearButtonChevron: { color: '#797876', marginLeft: 8 },
+  gearList: {
+    borderWidth: 1,
+    borderColor: '#2a2927',
+    borderRadius: 4,
+    backgroundColor: '#1c1b19',
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  gearOption: { paddingHorizontal: 14, paddingVertical: 12 },
+  gearOptionSelected: { backgroundColor: '#2a4a4d' },
+  gearOptionText: { color: '#cdccca' },
+  gearOptionType: { color: '#797876', fontSize: 12, marginTop: 2 },
+  gearEmpty: { color: '#797876', padding: 14 },
+  divider: { backgroundColor: '#2a2927' },
   bandsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
   bandsTitle: { color: '#cdccca' },
   bandCard: { backgroundColor: '#1c1b19' },
