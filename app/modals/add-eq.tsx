@@ -6,7 +6,7 @@ import { useEQStore } from '../../store/useEQStore';
 import { useGearStore } from '../../store/useGearStore';
 import { EQBand } from '../../types';
 
-function createDefaultBand(): EQBand {
+ffunction createDefaultBand(): EQBand {
   return { frequency: 1000, gain: 0, q: 1, type: 'peaking' };
 }
 
