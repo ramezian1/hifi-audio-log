@@ -6,12 +6,26 @@ import { Swipeable } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { useEQStore } from '../../store/useEQStore';
 import { useGearStore } from '../../store/useGearStore';
+import { useThemeStore } from '../../store/useThemeStore';
+import { EQCurveChart } from '../../components/EQCurveChart';
+import type { EQProfile } from '../../types';
 
 export default function EQScreen() {
   const profiles = useEQStore((s) => s.profiles);
   const deleteProfile = useEQStore((s) => s.deleteProfile);
   const gear = useGearStore((s) => s.gear);
+  const isDark = useThemeStore((s) => s.isDark);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const bg = isDark ? '#171614' : '#f5f4f2';
+  const titleColor = isDark ? '#cdccca' : '#1a1918';
+  const countColor = isDark ? '#797876' : '#5a5856';
+  const cardBg = isDark ? '#1c1b19' : '#ffffff';
+  const notesColor = isDark ? '#797876' : '#5a5856';
+  const emptyColor = isDark ? '#797876' : '#9a9896';
+  const fabColor = isDark ? '#4f98a3' : '#2e7a85';
+  const searchBg = isDark ? '#1c1b19' : '#ffffff';
+  const searchInputColor = isDark ? '#cdccca' : '#1a1918';
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -38,75 +52,88 @@ export default function EQScreen() {
 
   const renderRightActions = (id: string, name: string) => (
     <View style={styles.deleteAction}>
-      <Text style={styles.deleteText} onPress={() => handleDelete(id, name)}>
-        Delete
-      </Text>
+      <Text style={styles.deleteText} onPress={() => handleDelete(id, name)}>Delete</Text>
     </View>
   );
 
+  const renderItem = ({ item }: { item: EQProfile }) => {
+    const linkedGear = item.gearId ? gear.find((g) => g.id === item.gearId) : undefined;
+    const subtitle = [
+      linkedGear ? linkedGear.name : null,
+      `${item.bands.length} band${item.bands.length !== 1 ? 's' : ''}`,
+    ].filter(Boolean).join(' · ');
+
+    return (
+      <Swipeable
+        renderRightActions={() => renderRightActions(item.id, item.name)}
+        overshootRight={false}
+      >
+        <Card
+          style={[styles.card, { backgroundColor: cardBg }]}
+          onPress={() => router.push(`/modals/add-eq?id=${item.id}` as any)}
+        >
+          <Card.Title
+            title={item.name}
+            titleStyle={{ color: titleColor }}
+            subtitle={subtitle}
+            subtitleStyle={{ color: countColor }}
+          />
+          <Card.Content>
+            {item.bands.length > 0 && (
+              <EQCurveChart bands={item.bands} width={320} height={130} />
+            )}
+            {item.notes ? (
+              <Text style={[styles.notes, { color: notesColor }]}>{item.notes}</Text>
+            ) : null}
+          </Card.Content>
+        </Card>
+      </Swipeable>
+    );
+  };
+
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>EQ Profiles</Text>
+    <SafeAreaView edges={['top']} style={[styles.container, { backgroundColor: bg }]}>
+      <Text variant="headlineMedium" style={[styles.title, { color: titleColor }]}>EQ Profiles</Text>
       <Searchbar
         placeholder="Search by profile or gear name"
         value={searchQuery}
         onChangeText={setSearchQuery}
-        style={styles.searchbar}
-        inputStyle={styles.searchInput}
+        style={[styles.searchbar, { backgroundColor: searchBg }]}
+        inputStyle={{ color: searchInputColor }}
         iconColor="#797876"
         placeholderTextColor="#797876"
       />
-      <Text variant="bodySmall" style={styles.count}>
+      <Text variant="bodySmall" style={[styles.count, { color: countColor }]}>
         {filtered.length} profile{filtered.length !== 1 ? 's' : ''}
       </Text>
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          const linkedGear = item.gearId ? gear.find((g) => g.id === item.gearId) : undefined;
-          const subtitle = [
-            linkedGear ? linkedGear.name : null,
-            `${item.bands.length} bands`,
-          ].filter(Boolean).join(' · ');
-          return (
-            <Swipeable
-              renderRightActions={() => renderRightActions(item.id, item.name)}
-              overshootRight={false}
-            >
-              <Card style={styles.card}>
-                <Card.Title title={item.name} subtitle={subtitle} />
-                {item.notes && (
-                  <Card.Content>
-                    <Text variant="bodySmall" style={styles.notes}>{item.notes}</Text>
-                  </Card.Content>
-                )}
-              </Card>
-            </Swipeable>
-          );
-        }}
+        renderItem={renderItem}
         ListEmptyComponent={
-          <Text style={styles.empty}>
-            {searchQuery
-              ? 'No EQ profiles match your search'
-              : 'No EQ profiles yet. Tap + to create one.'}
+          <Text style={[styles.empty, { color: emptyColor }]}>
+            {searchQuery ? 'No EQ profiles match your search' : 'No EQ profiles yet. Tap + to create one.'}
           </Text>
         }
       />
-      <FAB icon="plus" style={styles.fab} onPress={() => router.push('/modals/add-eq')} />
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: fabColor }]}
+        onPress={() => router.push('/modals/add-eq')}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#171614', padding: 16 },
-  title: { color: '#cdccca', marginBottom: 12 },
-  searchbar: { backgroundColor: '#1c1b19', marginBottom: 8 },
-  searchInput: { color: '#cdccca' },
-  count: { color: '#797876', marginBottom: 8 },
-  card: { marginBottom: 12, backgroundColor: '#1c1b19' },
-  notes: { color: '#797876', marginTop: 4 },
-  empty: { color: '#797876', textAlign: 'center', marginTop: 48 },
-  fab: { position: 'absolute', right: 16, bottom: 16, backgroundColor: '#4f98a3' },
+  container: { flex: 1, padding: 16 },
+  title: { marginBottom: 12 },
+  searchbar: { marginBottom: 8 },
+  count: { marginBottom: 8 },
+  card: { marginBottom: 12 },
+  notes: { marginTop: 8, fontSize: 13 },
+  empty: { textAlign: 'center', marginTop: 48 },
+  fab: { position: 'absolute', right: 16, bottom: 16 },
   deleteAction: {
     backgroundColor: '#c0392b',
     justifyContent: 'center',
