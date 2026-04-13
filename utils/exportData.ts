@@ -1,6 +1,7 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Alert, Platform } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { Alert } from 'react-native';
 import { GearItem, ListeningSession, EQProfile } from '../types';
 
 export interface ExportPayload {
@@ -40,30 +41,22 @@ export async function exportToJSON(
   try {
     const payload = buildExportPayload(gear, sessions, eqProfiles);
     const json = JSON.stringify(payload, null, 2);
-
-    const fileName = `hifi-audio-log-${new Date()
-      .toISOString()
-      .replace(/[:.]/g, '-')
-      .slice(0, 19)}.json`;
-
+    const fileName = `hifi-audio-log-${
+      new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    }.json`;
     const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
     await FileSystem.writeAsStringAsync(fileUri, json, {
       encoding: FileSystem.EncodingType.UTF8,
     });
-
     const canShare = await Sharing.isAvailableAsync();
     if (!canShare) {
-      Alert.alert(
-        'Sharing not available',
-        `File saved to: ${fileUri}`
-      );
+      Alert.alert('Sharing not available', `File saved to: ${fileUri}`);
       return;
     }
-
     await Sharing.shareAsync(fileUri, {
       mimeType: 'application/json',
       dialogTitle: 'Export Hi-Fi Audio Log',
-      UTI: 'public.json', // iOS
+      UTI: 'public.json',
     });
   } catch (error) {
     console.error('Export failed:', error);
@@ -72,14 +65,63 @@ export async function exportToJSON(
 }
 
 /**
- * Parse and validate an imported JSON file.
- * Returns null if the file is invalid.
+ * Open a document picker so the user can choose a backup JSON file,
+ * then parse and validate it. Returns null if invalid or cancelled.
+ */
+export async function pickAndParseImportFile(): Promise<ExportPayload | null> {
+  try {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'application/json',
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled || !result.assets?.[0]?.uri) return null;
+    const json = await FileSystem.readAsStringAsync(result.assets[0].uri, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+    return parseImportFile(json);
+  } catch (error) {
+    console.error('Import pick failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Parse and validate an imported JSON string.
+ * Returns null if the payload is missing required fields or has wrong shapes.
  */
 export function parseImportFile(json: string): ExportPayload | null {
   try {
     const data = JSON.parse(json) as ExportPayload;
-    if (!data.version || !Array.isArray(data.gear) || !Array.isArray(data.sessions)) {
+    if (
+      typeof data.version !== 'string' ||
+      typeof data.exportedAt !== 'string' ||
+      !Array.isArray(data.gear) ||
+      !Array.isArray(data.sessions) ||
+      !Array.isArray(data.eqProfiles)
+    ) {
       return null;
+    }
+    // Validate each gear item has required fields
+    for (const g of data.gear) {
+      if (typeof g.id !== 'string' || typeof g.name !== 'string' || typeof g.brand !== 'string') {
+        return null;
+      }
+    }
+    // Validate each session has required fields
+    for (const s of data.sessions) {
+      if (typeof s.id !== 'string' || typeof s.date !== 'string') {
+        return null;
+      }
+    }
+    // Validate each EQ profile has required fields
+    for (const p of data.eqProfiles) {
+      if (
+        typeof p.id !== 'string' ||
+        typeof p.name !== 'string' ||
+        !Array.isArray(p.bands)
+      ) {
+        return null;
+      }
     }
     return data;
   } catch {
