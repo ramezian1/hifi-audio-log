@@ -11,6 +11,7 @@ A mobile app to track your headphone/DAC gear, listening sessions, and EQ profil
 - 💾 **Backup & Restore** — export all data to JSON and re-import it anytime
 - 🔍 **Search & filter** — filter sessions by rating and search by track, artist, or gear name
 - 🗑️ **Swipe to delete** — swipe left on any gear or EQ entry to delete with confirmation
+- 🌙☀️ **Dark/light theme** — toggle between dark and light mode from the Home screen; preference is saved
 
 ## Tech Stack
 
@@ -18,7 +19,7 @@ A mobile app to track your headphone/DAC gear, listening sessions, and EQ profil
 - **Language:** TypeScript
 - **Navigation:** Expo Router (file-based)
 - **State / Storage:** Zustand + AsyncStorage (persisted, local-first)
-- **UI:** React Native Paper (Material Design 3, dark theme)
+- **UI:** React Native Paper (Material Design 3, dark + light themes)
 - **Testing:** Jest + React Native Testing Library (82 unit tests)
 
 ## Getting Started
@@ -65,7 +66,8 @@ hifi-audio-log/
 ├── store/                      # Zustand state management
 │   ├── useGearStore.ts
 │   ├── useSessionStore.ts
-│   └── useEQStore.ts
+│   ├── useEQStore.ts
+│   └── useThemeStore.ts        # Dark/light theme persistence
 ├── types/                      # TypeScript interfaces
 │   └── index.ts                # GearItem, ListeningSession, EQProfile, EQBand
 ├── utils/                      # Utility functions
@@ -95,6 +97,11 @@ hifi-audio-log/
 - Each EQ profile supports up to 10 bands with frequency, gain, Q, and filter type
 - Profiles can optionally be linked to a specific piece of gear
 
+### Theme Toggle
+
+- Tap the sun/moon icon in the top-right corner of the Home screen to switch between dark and light mode
+- Your preference is saved automatically and persists across app restarts
+
 ## Roadmap
 
 - [x] Gear CRUD (add, edit, delete)
@@ -106,8 +113,8 @@ hifi-audio-log/
 - [x] Swipe-to-delete for gear and EQ profiles
 - [x] Backup & Restore modal
 - [x] Friendly date format (MM/DD/YYYY HH:mm)
+- [x] Dark/light theme toggle
 - [ ] EQ curve visualizer
-- [ ] Dark/light theme toggle
 - [ ] Image attachments for gear
 
 ## License
