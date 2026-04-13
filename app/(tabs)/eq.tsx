@@ -81,7 +81,7 @@ export default function EQScreen() {
           />
           <Card.Content>
             {item.bands.length > 0 && (
-              <EQCurveChart bands={item.bands} width={320} height={130} />
+              <EQCurveChart bands={item.bands} preamp={item.preamp} width={320} height={130} />
             )}
             {item.notes ? (
               <Text style={[styles.notes, { color: notesColor }]}>{item.notes}</Text>
