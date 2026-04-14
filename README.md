@@ -26,8 +26,10 @@ A mobile app to track your headphone/DAC gear, listening sessions, and EQ profil
 ## Getting Started
 
 ```bash
-# Install dependencies
+# Install dependencies (Recommended Sequence)
 npm install react@19.2.0 react-dom@19.2.0 --legacy-peer-deps
+npm install jest@29 --save-dev --legacy-peer-deps
+npm install --legacy-peer-deps
 
 # Start the dev server
 npm start
